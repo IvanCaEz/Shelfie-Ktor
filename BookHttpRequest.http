@@ -1,8 +1,10 @@
+// POST de LIBROS
+###
 POST http://127.0.0.1:8080/books
 Content-Type: application/json
 
 {
-  "id": "1",
+  "idBook": 1,
   "title": "Romeo & Juliet",
   "author": "William Shakespeare",
   "publicationYear": 1597,
@@ -12,9 +14,9 @@ Content-Type: application/json
   "stockTotal": 20,
   "stockRemaining": 1,
   "genre": "classics",
-  "comments":[
+  "reviews":[
     {
-      "id": 1,
+      "idReview": 1,
       "idBook": 1,
       "idUser": 1,
       "date": 2019,
@@ -23,10 +25,325 @@ Content-Type: application/json
   ]
 }
 ###
+POST http://127.0.0.1:8080/books
+Content-Type: application/json
+
+{
+  "idBook": 2,
+  "title": "Hamlet",
+  "author": "William Shakespeare",
+  "publicationYear": 1601,
+  "synopsis": "Hamlet is the story of the Prince of Denmark who learns of the death of his father at the hands of his uncle, Claudius. Claudius murders Hamlet's father, his own brother, to take the throne of Denmark and to marry Hamlet's widowed mother. Hamlet is sunk into a state of great despair as a result of discovering the murder of his father and the infidelity of his mother. Hamlet is torn between his great sadness and his desire for the revenge of his father's murder.",
+  "bookCover": "",
+  "state": true,
+  "stockTotal": 18,
+  "stockRemaining": 7,
+  "genre": "classics",
+  "reviews":[]
+}
+###
+POST http://127.0.0.1:8080/books
+Content-Type: application/json
+
+{
+  "idBook": 3,
+  "title": "The Little Prince",
+  "author": "Antoine de Saint-Exupéry",
+  "publicationYear": 1943,
+  "synopsis": "A pilot stranded in the desert awakes one morning to see, standing before him, the most extraordinary little fellow. Please asks the stranger, \"draw me a sheep.\" And the pilot realizes that when life's events are too difficult to understand, there is no choice but to succumb to their mysteries. He pulls out pencil and paper... And thus begins this wise and enchanting fable that, in teaching the secret of what is really important in life, has changed forever the world for its readers",
+  "bookCover": "",
+  "state": true,
+  "stockTotal": 12,
+  "stockRemaining": 7,
+  "genre": "classics",
+  "reviews":[]
+}
+###
+POST http://127.0.0.1:8080/books
+Content-Type: application/json
+
+{
+  "idBook": 4,
+  "title": "The Cruel Prince",
+  "author": "Holly Black",
+  "publicationYear": 2018,
+  "synopsis": "Jude was seven when her parents were murdered and she and her two sisters were stolen away to live in the treacherous High Court of Faerie. Ten years later, Jude wants nothing more than to belong there, despite her mortality. But many of the fey despise humans. Especially Prince Cardan, the youngest and wickedest son of the High King.To win a place at the Court, she must defy him–and face the consequences   As Jude becomes more deeply embroiled in palace intrigues and deceptions, she discovers her own capacity for trickery and bloodshed. But as betrayal threatens to drown the Courts of Faerie in violence, Jude will need to risk her life in a dangerous alliance to save her sisters, and Faerie itself.",
+  "bookCover": "",
+  "state": true,
+  "stockTotal": 5,
+  "stockRemaining": 1,
+  "genre": "fantasy",
+  "reviews":[]
+}
+###
+POST http://127.0.0.1:8080/books
+Content-Type: application/json
+
+{
+  "idBook": 5,
+  "title": "The Wicked King",
+  "author": "Holly Black",
+  "publicationYear": 2019,
+  "synopsis": "You must be strong enough to strike and strike and strike again without tiring. The first lesson is to make yourself strong. After the jaw-dropping revelation that Oak is the heir to Faerie, Jude must keep her brother safe. To do so, she has bound the wicked king, Cardan, to her, and made herself the power behind the throne. Navigating the constantly shifting political alliances of Faerie would be difficult enough if Cardan were easy to control. But he does everything in his power to humiliate and undermine her even as his fascination with her remains undiminished. When it becomes all too clear that someone close to Jude means to betray her, threatening her own life and the lives of everyone she loves, Jude must uncover the traitor and fight her own complicated feelings for Cardan to maintain control as a mortal in a Faerie world.",
+  "bookCover": "",
+  "state": true,
+  "stockTotal": 5,
+  "stockRemaining": 2,
+  "genre": "fantasy",
+  "reviews":[]
+}
+###
+POST http://127.0.0.1:8080/books
+Content-Type: application/json
+
+{
+  "idBook": 6,
+  "title": "The Queen of Nothing",
+  "author": "Holly Black",
+  "publicationYear": 2019,
+  "synopsis": "Power is much easier to acquire than it is to hold onto. Jude learned this lesson when she released her control over the wicked king, Cardan, in exchange for immeasurable power. Now as the exiled mortal Queen of Faerie, Jude is powerless and left reeling from Cardan’s betrayal. She bides her time determined to reclaim everything he took from her. Opportunity arrives in the form of her deceptive twin sister, Taryn, whose mortal life is in peril. Jude must risk venturing back into the treacherous Faerie Court, and confront her lingering feelings for Cardan, if she wishes to save her sister. But Elfhame is not as she left it. War is brewing. As Jude slips deep within enemy lines she becomes ensnared in the conflict’s bloody politics. And, when a dormant yet powerful curse is unleashed, panic spreads throughout the land, forcing her to choose between her ambition and her humanity…",
+  "bookCover": "",
+  "state": true,
+  "stockTotal": 5,
+  "stockRemaining": 3,
+  "genre": "fantasy",
+  "reviews":[]
+}
+###
+POST http://127.0.0.1:8080/books
+Content-Type: application/json
+
+{
+  "idBook": 7,
+  "title": "Cinder",
+  "author": "Marissa Meyer",
+  "publicationYear": 2012,
+  "synopsis": "Humans and androids crowd the raucous streets of New Beijing. A deadly plague ravages the population. From space, a ruthless Lunar people watch, waiting to make their move. No one knows that Earth’s fate hinges on one girl. . . . Cinder, a gifted mechanic, is a cyborg.\nShe’s a second-class citizen with a mysterious past, reviled by her stepmother and blamed for her stepsister’s illness. But when her life becomes intertwined with the handsome Prince Kai’s, she suddenly finds herself at the center of an intergalactic struggle, and a forbidden attraction. Caught between duty and freedom, loyalty and betrayal, she must uncover secrets about her past in order to protect her world’s future.",
+  "bookCover": "",
+  "state": true,
+  "stockTotal": 5,
+  "stockRemaining": 2,
+  "genre": "fantasy",
+  "reviews":[
+    {
+      "idReview": 1,
+      "idBook": 7,
+      "idUser": 2,
+      "date": 2022,
+      "comment": "Muy nice"
+    }
+  ]
+}
+###
+POST http://127.0.0.1:8080/books
+Content-Type: application/json
+
+{
+  "idBook": 8,
+  "title": "Six of Crows",
+  "author": "Leigh Bardugo",
+  "publicationYear": 2015,
+  "synopsis": "Ketterdam: a bustling hub of international trade where anything can be had for the right price—and no one knows that better than criminal prodigy Kaz Brekker. Kaz is offered a chance at a deadly heist that could make him rich beyond his wildest dreams. But he can’t pull it off alone...\n A convict with a thirst for revenge \nA sharpshooter who can’t walk away from a wager\nA runaway with a privileged past \nA spy known as the Wraith \nA Heartrender using her magic to survive the slums    \nA thief with a gift for unlikely escapes\nSix dangerous outcasts. One impossible heist. Kaz’s crew is the only thing that might stand between the world and destruction—if they don’t kill each other first.",
+  "bookCover": "https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1651710803i/23437156.jpg",
+  "state": true,
+  "stockTotal": 8,
+  "stockRemaining": 4,
+  "genre": "fantasy",
+  "reviews":[]
+}
+###
+POST http://127.0.0.1:8080/books
+Content-Type: application/json
+
+{
+  "idBook": 9,
+  "title": "Crooked Kingdom",
+  "author": "Leigh Bardugo",
+  "publicationYear": 2016,
+  "synopsis": "Kaz Brekker and his crew of deadly outcasts have just pulled off a heist so daring even they didn't think they'd survive. But instead of divvying up a fat reward, they're right back to fighting for their lives.\nDouble-crossed and badly weakened, the crew is low on resources, allies, and hope. As powerful forces from around the world descend on Ketterdam to root out the secrets of the dangerous drug known as jurda parem, old rivals and new enemies emerge to challenge Kaz's cunning and test the team's fragile loyalties.\nA war will be waged on the city's dark and twisting streets - a battle for revenge and redemption that will decide the fate of the Grisha world.",
+  "bookCover": "",
+  "state": true,
+  "stockTotal": 5,
+  "stockRemaining": 3,
+  "genre": "fantasy",
+  "reviews":[]
+}
+
+###
+
+// POST DE USERS
+
+POST http://127.0.0.1:8080/users
+Content-Type: application/json
+
+{
+  "idUser": 1,
+  "name": "Niky",
+  "email": "nikita@gmail.com",
+  "password": "123456",
+  "userType": "admin",
+  "borrowedBooksCounter": 1,
+  "bookHistory": [
+    {
+      "idBook": 1,
+      "title": "Romeo & Juliet",
+      "author": "William Shakespeare",
+      "publicationYear": 1597,
+      "synopsis": "In Romeo and Juliet, Shakespeare creates a violent world, in which two young people fall in love. It is not simply that their families disapprove; the Montagues and the Capulets are engaged in a blood feud.   In this death-filled setting, the movement from love at first sight to the lovers’ final union in death seems almost inevitable. And yet, this play set in an extraordinary world has become the quintessential story of young love. In part because of its exquisite language, it is easy to respond as if it were about all young lovers.",
+      "bookCover": "",
+      "state": true,
+      "stockTotal": 20,
+      "stockRemaining": 1,
+      "genre": "classics",
+      "reviews": [
+        {
+          "idReview": 1,
+          "idBook": 1,
+          "idUser": 1,
+          "date": 2019,
+          "comment": "cinco estrellas"
+        }
+      ]
+    }
+  ],
+  "banned": false
+}
+###
+POST http://127.0.0.1:8080/users
+Content-Type: application/json
+
+{
+  "idUser": 2 ,
+  "name": "Ivan",
+  "email": "ivan@gmail.com",
+  "password": "123456",
+  "userType": "admin",
+  "borrowedBooksCounter": 1,
+  "bookHistory": [
+    {
+      "idBook": 7,
+      "title": "Cinder",
+      "author": "Marissa Meyer",
+      "publicationYear": 2012,
+      "synopsis": "Humans and androids crowd the raucous streets of New Beijing. A deadly plague ravages the population. From space, a ruthless Lunar people watch, waiting to make their move. No one knows that Earth’s fate hinges on one girl. . . . Cinder, a gifted mechanic, is a cyborg.\nShe’s a second-class citizen with a mysterious past, reviled by her stepmother and blamed for her stepsister’s illness. But when her life becomes intertwined with the handsome Prince Kai’s, she suddenly finds herself at the center of an intergalactic struggle, and a forbidden attraction. Caught between duty and freedom, loyalty and betrayal, she must uncover secrets about her past in order to protect her world’s future.",
+      "bookCover": "",
+      "state": true,
+      "stockTotal": 5,
+      "stockRemaining": 2,
+      "genre": "fantasy",
+      "reviews": [
+        {
+          "idReview": 1,
+          "idBook": 7,
+          "idUser": 2,
+          "date": 2022,
+          "comment": "Muy nice"
+        }
+      ]
+    }
+  ],
+      "banned": false
+}
+###
+
+//GET USERS
+###
+GET http://127.0.0.1:8080/users
+Accept: application/json
+###
+GET http://127.0.0.1:8080/users/1
+Accept: application/json
+###
+GET http://127.0.0.1:8080/users/2
+Accept: application/json
+###
+
+// GET BOOKS
+
+GET http://127.0.0.1:8080/books
+Accept: application/json
+###
 GET http://127.0.0.1:8080/books/1
 Accept: application/json
 
 ###
+GET http://127.0.0.1:8080/books/3
+Accept: application/json
+
+###
+GET http://127.0.0.1:8080/books/8
+Accept: application/json
+
+###
+
+// GET REVIEWS FROM BOOKS
+
+###
 GET http://127.0.0.1:8080/books/1/reviews
 Accept: application/json
+
+###
+GET http://127.0.0.1:8080/books/1/reviews/1
+Accept: application/json
+
+
+// PUT REVIEWS
+
+###
+PUT http://127.0.0.1:8080/books/7/reviews/1
+Content-Type: application/json
+
+{
+      "idReview": 1,
+      "idBook": 7,
+      "idUser": 2,
+      "date": 2022,
+      "comment": "Suuuuper Nice"
+    }
+
+###
+
+// POST NEW REVIEW
+
+POST http://127.0.0.1:8080/books/2/reviews
+Content-Type: application/json
+
+{
+  "idReview": 1,
+  "idBook": 2,
+  "idUser": 2,
+  "date": 2022,
+  "comment": "Profundo"
+}
+
+###
+// GET REVIEW
+GET http://127.0.0.1:8080/books/7/reviews/1
+Accept: application/json
+###
+GET http://127.0.0.1:8080/books/2
+Accept: application/json
+
+
+
+###
+GET http://127.0.0.1:8080/users/2
+Accept: application/json
+
+###
+GET http://127.0.0.1:8080/books/2
+Accept: application/json
+###
+GET http://127.0.0.1:8080/books/2/reviews/1
+Accept: application/json
+
+// DELETE
+
+###
+DELETE http://127.0.0.1:8080/books/2/reviews/1
+Accept: application/json
+
+
+
+
 

@@ -5,7 +5,7 @@ import java.util.Date
 
 @Serializable
 data class Book (
-    var id: Int,
+    var idBook: Int,
     var title: String,
     var author: String,
     var publicationYear: Int,
@@ -15,6 +15,6 @@ data class Book (
     var stockTotal: Int,
     var stockRemaining: Int,
     var genre: String,
-    val comments: MutableList<Review>
+    val reviews: MutableList<Review>
 )
 val bookList = mutableListOf<Book>()

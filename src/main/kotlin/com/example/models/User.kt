@@ -4,13 +4,13 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class User(
-    val id: Int,
-    val name: String,
-    val email: String,
-    val password: String,
-    val userType: String,
-    val borrowedBooksCounter: Int,
-    val bookHistory: MutableList<Book>,
-    val banned: Boolean
+    var idUser: Int,
+    var name: String,
+    var email: String,
+    var password: String,
+    var userType: String,
+    var borrowedBooksCounter: Int,
+    var bookHistory: MutableList<Book>,
+    var banned: Boolean
 )
 val userList = mutableListOf<User>()

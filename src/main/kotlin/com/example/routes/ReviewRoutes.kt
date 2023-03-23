@@ -10,16 +10,16 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
 fun Route.reviewRouting(){
-    route("/books/{bookid}/reviews"){
+    route("/books/{bookid?}/reviews"){
 
         // GET
 
         get {
             val bookID = call.parameters["bookid"]
-            for (book   in bookList){
-                if (book.id == bookID?.toInt()){
-                    if (reviewList.isNotEmpty()){
-                        call.respond(book.comments)
+            for (book in bookList){
+                if (book.idBook == bookID?.toInt()){
+                    if (book.reviews.isNotEmpty()){
+                        call.respond(book.reviews)
                     }
                 } else {
                     call.respondText("No reviews found in book $bookID", status = HttpStatusCode.OK)
@@ -27,17 +27,18 @@ fun Route.reviewRouting(){
             }
         }
 
+        //
+
         get("{id}"){
             if (call.parameters["id"].isNullOrBlank()) return@get call.respondText(
-                "Missing review id", status = HttpStatusCode.BadRequest
+                "Missing book id", status = HttpStatusCode.BadRequest
             )
-            //olkase
-            val  bookID = call.parameters["bookid"]
+            val bookID = call.parameters["bookid"]
             val id = call.parameters["id"]
             for (book in bookList) {
-                if (book.id == bookID?.toInt()){
-                    for (comment in book.comments){
-                        if (comment.id == id?.toInt()){
+                if (book.idBook == bookID!!.toInt()){
+                    for (comment in book.reviews){
+                        if (comment.idReview == id!!.toInt()){
                             return@get call.respond(comment)
                         }
                     }
@@ -55,44 +56,49 @@ fun Route.reviewRouting(){
             val bookID = call.parameters["bookid"]
             val review = call.receive<Review>()
             for (book in bookList){
-                if (book.id == bookID?.toInt()){
-                    book.comments.add(review)
+                if ((book.idBook == bookID?.toInt())){
+                    // Si ya existe la review con el mismo id, no se almacena
+                    if (book.reviews.none { it.idReview == review.idReview }){
+                        book.reviews.add(review)
+                    } else {
+                        return@post call.respondText(
+                            "Review with id ${review.idReview} already exists", status = HttpStatusCode.OK)
+                    }
+                    call.respondText("Review stored correctly", status = HttpStatusCode.Created)
                 }
             }
-
-            call.respondText("Review stored correctly", status = HttpStatusCode.Created)
-
 
         }
 
         // PUT
 
-        put("{id?}") {
+        put("{id}") {
             val bookID = call.parameters["bookid"]
 
             if (bookID.isNullOrBlank()) return@put call.respondText(
                 "Missing book id",
                 status = HttpStatusCode.BadRequest
             )
-            val commentID = call.parameters["id"]
+            val reviewID = call.parameters["id"]
             val commentToUpdate = call.receive<Review>()
             for (book in bookList){
-                if (book.id == bookID.toInt()){
-                    for (comment in book.comments) {
-                        if (comment.id == commentID?.toInt()) {
-                            comment.id = commentToUpdate.id
-                           // comment.idUser = commentToUpdate.idUser
+                if (book.idBook == bookID.toInt()){
+                    for (comment in book.reviews) {
+                        if (comment.idReview == reviewID?.toInt()) {
+                            comment.idBook = commentToUpdate.idBook
+                            comment.idUser = commentToUpdate.idUser
                             comment.comment = commentToUpdate.comment
                             comment.date = commentToUpdate.date
+                            comment.idBook = commentToUpdate.idBook
 
                             return@put call.respondText(
-                                "Comment with id $commentID from book with id ${book.id} has been updated",
+                                "Comment with id $reviewID from book with id ${book.idBook} has been updated",
                                 status = HttpStatusCode.Accepted
                             )
                         }
                     }
                     call.respondText(
-                        "Review with id $$commentID not found",
+                        "Review with id $$reviewID not found",
                         status = HttpStatusCode.NotFound
                     )
                 }
@@ -109,10 +115,10 @@ fun Route.reviewRouting(){
             )
             val commentID = call.parameters["id"]
             for (book in bookList) {
-                if (book.id == bookID.toInt()) {
-                    for (comment in book.comments){
-                        if (comment.id == commentID?.toInt()){
-                            book.comments.remove(comment)
+                if (book.idBook == bookID.toInt()) {
+                    for (comment in book.reviews){
+                        if (comment.idReview == commentID?.toInt()){
+                            book.reviews.remove(comment)
                             return@delete call.respondText("Comment with id $commentID removed from book with id $bookID",
                                 status = HttpStatusCode.Accepted)
                         }

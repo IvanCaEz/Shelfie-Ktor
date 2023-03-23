@@ -26,7 +26,7 @@ fun Route.bookRouting() {
             )
             val id = call.parameters["id"]
             for (book in bookList) {
-                if (book.id == id?.toInt()) return@get call.respond(book)
+                if (book.idBook == id?.toInt()) return@get call.respond(book)
             }
             call.respondText(
                 "Book with id $id not found",
@@ -38,10 +38,96 @@ fun Route.bookRouting() {
 
         post {
             val book = call.receive<Book>()
-            bookList.add(book)
+            // Si no hay ningún libro ya con ese id, lo añadimos
+            if (bookList.none { book.idBook == it.idBook }){
+                bookList.add(book)
+            } else {
+                return@post call.respondText(
+                    "Book with id ${book.idBook} already exists", status = HttpStatusCode.OK)
+            }
             call.respondText("Book stored correctly", status = HttpStatusCode.Created)
 
+
         }
+
+        /*
+        Esto de las imágenes no logro hacerlo funcionar... preguntar a Jordi el próximo día
+        post {
+           // val book = call.receive<Book>()
+            var bookID = 0
+            var bookTitle = ""
+            var author = ""
+            var publicationYear = 0
+            var synopsis = ""
+            var bookCover = ""
+            var state = true
+            var stockTotal = 0
+            var stockRemaining = 0
+            var genre = ""
+            val reviews = mutableListOf<Review>()
+            val bookData = call.receiveMultipart()
+
+            // Separem el tractament de les dades entre: dades primitives i fitxers
+            bookData.forEachPart { part ->
+                when(part) {
+                    // Aquí recollim les dades primitives
+                    is PartData.FormItem -> {
+                        when(part.name) {
+                            "idBook" -> bookID = part.value.toInt()
+                            "title" -> bookTitle = part.value
+                            "author" -> author = part.value
+                            "publicationYear" -> publicationYear = part.value.toInt()
+                            "synopsis" -> synopsis = part.value
+                            "state" -> state = part.value.toBoolean()
+                            "stockTotal" -> stockTotal = part.value.toInt()
+                            "stockRemaining" -> stockRemaining = part.value.toInt()
+                            "genre" -> genre = part.value
+                        }
+                    }
+                    // Aquí recollim els fitxers
+                    is PartData.FileItem -> {
+                        bookCover = "uploads/" + part.originalFileName as String
+                        val fileBytes = part.streamProvider().readBytes()
+                        File(bookCover).writeBytes(fileBytes)
+                    }
+                    else -> {}
+                }
+
+            }
+
+            // Si no hay ningún libro ya con ese id, lo añadimos
+            if (bookList.none { bookID == it.idBook }){
+                bookList.add(Book(bookID, bookTitle, author,
+                    publicationYear, synopsis, bookCover, state, stockTotal, stockRemaining, genre, reviews))
+                //bookList.add(book)
+            } else {
+                return@post call.respondText(
+                    "Book with id $bookID already exists", status = HttpStatusCode.OK)
+            }
+            call.respondText("Book stored correctly", status = HttpStatusCode.Created)
+
+
+        }
+
+        // GET book cover
+
+        get("/bookCover/{id?}") {
+            var file: File = File("")
+            if (call.parameters["id"].isNullOrBlank()) return@get call.respondText(
+                "Missing id",
+                status = HttpStatusCode.BadRequest
+            )
+            val id = call.parameters["id"]
+            for (book in bookList) {
+                if (book.idBook == id?.toInt()) file = File(book.bookCover)
+            }
+            if (file.exists()) {
+                call.respondFile(file)
+            } else {
+                call.respondText("No image found", status = HttpStatusCode.NotFound)
+            }
+        }
+         */
 
         // Put solo pueden hacerlo los administradores
         put("{id?}") {
@@ -52,8 +138,8 @@ fun Route.bookRouting() {
             val id = call.parameters["id"]
             val bookToUpdate = call.receive<Book>()
             for (book in bookList) {
-                if (book.id == id?.toInt()) {
-                    book.id = bookToUpdate.id
+                if (book.idBook == id?.toInt()) {
+                    book.idBook = bookToUpdate.idBook
                     book.title = bookToUpdate.title
                     book.author = bookToUpdate.author
                     book.publicationYear = bookToUpdate.publicationYear
@@ -83,7 +169,7 @@ fun Route.bookRouting() {
             )
             val id = call.parameters["id"]
             for (book in bookList) {
-                if (book.id == id?.toInt()) {
+                if (book.idBook == id?.toInt()) {
                     bookList.remove(book)
                     return@delete call.respondText("Book removed correctly.", status = HttpStatusCode.Accepted)
                 }
@@ -92,7 +178,6 @@ fun Route.bookRouting() {
                 "Book with id $id not found.",
                 status = HttpStatusCode.NotFound
             )
-//prueba push
         }
     }
 

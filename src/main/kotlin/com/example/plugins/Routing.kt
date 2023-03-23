@@ -1,6 +1,7 @@
 package com.example.plugins
 
 import com.example.routes.bookRouting
+import com.example.routes.reviewRouting
 import com.example.routes.userRouting
 import io.ktor.server.routing.*
 import io.ktor.server.response.*
@@ -15,6 +16,7 @@ fun Application.configureRouting() {
     routing {
         bookRouting()
         userRouting()
+        reviewRouting()
     }
 }
 
