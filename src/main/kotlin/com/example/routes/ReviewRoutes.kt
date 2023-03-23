@@ -31,6 +31,7 @@ fun Route.reviewRouting(){
             if (call.parameters["id"].isNullOrBlank()) return@get call.respondText(
                 "Missing review id", status = HttpStatusCode.BadRequest
             )
+            //olkase
             val  bookID = call.parameters["bookid"]
             val id = call.parameters["id"]
             for (book in bookList) {
