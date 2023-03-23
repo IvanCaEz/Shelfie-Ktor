@@ -1,0 +1,32 @@
+POST http://127.0.0.1:8080/books
+Content-Type: application/json
+
+{
+  "id": "1",
+  "title": "Romeo & Juliet",
+  "author": "William Shakespeare",
+  "publicationYear": 1597,
+  "synopsis": "In Romeo and Juliet, Shakespeare creates a violent world, in which two young people fall in love. It is not simply that their families disapprove; the Montagues and the Capulets are engaged in a blood feud.   In this death-filled setting, the movement from love at first sight to the lovers’ final union in death seems almost inevitable. And yet, this play set in an extraordinary world has become the quintessential story of young love. In part because of its exquisite language, it is easy to respond as if it were about all young lovers.",
+  "bookCover": "",
+  "state": true,
+  "stockTotal": 20,
+  "stockRemaining": 1,
+  "genre": "classics",
+  "comments":[
+    {
+      "id": 1,
+      "idBook": 1,
+      "idUser": 1,
+      "date": 2019,
+      "comment": "cinco estrellas"
+    }
+  ]
+}
+###
+GET http://127.0.0.1:8080/books/1
+Accept: application/json
+
+###
+GET http://127.0.0.1:8080/books/1/reviews
+Accept: application/json
+
