@@ -18,6 +18,7 @@ fun main() {
  * Cosas que pensar
  *  - User: almacenar libro entero o solo ID del libro?
  *  - Cómo vincular una review al libro y al usuario a la misma vez?
+ *
  */
 
 fun Application.module() {

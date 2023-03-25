@@ -2,6 +2,7 @@ package com.example.routes
 
 import com.example.models.Book
 import com.example.models.bookList
+import com.example.models.userList
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
@@ -14,41 +15,40 @@ fun Route.bookRouting() {
         // Todos los libros
         get {
             if (bookList.isNotEmpty()) {
-                call.respond(bookList)
+                call.respond(bookList.values)
             } else {
                 call.respondText("No books found.", status = HttpStatusCode.OK)
             }
         }
         // Buscar por ID de libro
-        get ("{id}"){
+        get("{id}") {
             if (call.parameters["id"].isNullOrBlank()) return@get call.respondText(
                 "Missing book id", status = HttpStatusCode.BadRequest
             )
             val id = call.parameters["id"]
-            for (book in bookList) {
-                if (book.idBook == id?.toInt()) return@get call.respond(book)
-            }
-            call.respondText(
-                "Book with id $id not found",
-                status = HttpStatusCode.NotFound
-            )
+            if (bookList.isNotEmpty()) {
+                if (bookList.containsKey(id) && bookList[id] != null) {
+                    return@get call.respond(bookList[id]!!)
+                } else call.respondText("Book with id $id not found", status = HttpStatusCode.NotFound)
+            } else call.respondText("No books found.", status = HttpStatusCode.OK)
         }
 
-        // Post
+        // Post solo pueden hacerlo los admins
 
         post {
             val book = call.receive<Book>()
             // Si no hay ningún libro ya con ese id, lo añadimos
-            if (bookList.none { book.idBook == it.idBook }){
-                bookList.add(book)
-            } else {
-                return@post call.respondText(
-                    "Book with id ${book.idBook} already exists", status = HttpStatusCode.OK)
+           if (!bookList.containsKey(book.idBook)) {
+                bookList[book.idBook] = book
+                call.respondText("Book stored correctly", status = HttpStatusCode.Created)
+                return@post call.respond(book)
+           } else {
+                 return@post call.respondText("Book with id ${book.idBook} already exists",
+                     status = HttpStatusCode.OK )
+               }
             }
-            call.respondText("Book stored correctly", status = HttpStatusCode.Created)
 
 
-        }
 
         /*
         Esto de las imágenes no logro hacerlo funcionar... preguntar a Jordi el próximo día
@@ -95,20 +95,6 @@ fun Route.bookRouting() {
 
             }
 
-            // Si no hay ningún libro ya con ese id, lo añadimos
-            if (bookList.none { bookID == it.idBook }){
-                bookList.add(Book(bookID, bookTitle, author,
-                    publicationYear, synopsis, bookCover, state, stockTotal, stockRemaining, genre, reviews))
-                //bookList.add(book)
-            } else {
-                return@post call.respondText(
-                    "Book with id $bookID already exists", status = HttpStatusCode.OK)
-            }
-            call.respondText("Book stored correctly", status = HttpStatusCode.Created)
-
-
-        }
-
         // GET book cover
 
         get("/bookCover/{id?}") {
@@ -137,48 +123,34 @@ fun Route.bookRouting() {
             )
             val id = call.parameters["id"]
             val bookToUpdate = call.receive<Book>()
-            for (book in bookList) {
-                if (book.idBook == id?.toInt()) {
-                    book.idBook = bookToUpdate.idBook
-                    book.title = bookToUpdate.title
-                    book.author = bookToUpdate.author
-                    book.publicationYear = bookToUpdate.publicationYear
-                    book.synopsis = bookToUpdate.synopsis
-                    book.bookCover = bookToUpdate.bookCover
-                    book.state = bookToUpdate.state
-                    book.stockTotal = bookToUpdate.stockTotal
-                    book.stockRemaining = bookToUpdate.stockRemaining
-                    book.genre = bookToUpdate.genre
 
+            if (bookList.isNotEmpty()) {
+                if (bookList.containsKey(id)) {
+                    bookList[id!!] = bookToUpdate
                     return@put call.respondText(
-                        "Book with id $id has been updated",
-                        status = HttpStatusCode.Accepted
-                    )
-                }
-            }
-            call.respondText(
-                "Book with id $id not found.",
-                status = HttpStatusCode.NotFound
-            )
+                        "Book with id $id has been updated", status = HttpStatusCode.Accepted)
+                } else return@put call.respondText("Book with id $id not found.",
+                    status = HttpStatusCode.NotFound)
+            } else call.respondText("No books found.", status = HttpStatusCode.OK)
         }
-
-        delete("{id}"){
+        //Delete solo pueden hacerlo los admins
+        delete("{id}") {
             if (call.parameters["id"].isNullOrBlank()) return@delete call.respondText(
                 "Missing book id",
                 status = HttpStatusCode.BadRequest
             )
             val id = call.parameters["id"]
-            for (book in bookList) {
-                if (book.idBook == id?.toInt()) {
-                    bookList.remove(book)
-                    return@delete call.respondText("Book removed correctly.", status = HttpStatusCode.Accepted)
-                }
+            if (bookList.isNotEmpty()) {
+                if (bookList.containsKey(id)) {
+                    bookList.remove(id)
+                    return@delete call.respondText(
+                        "Book removed successfully.", status = HttpStatusCode.Accepted
+                    )
+                } else return@delete call.respondText("Book with id $id not found.",
+                    status = HttpStatusCode.NotFound)
+            } else {
+                call.respondText("No books found.", status = HttpStatusCode.NotFound)
             }
-            call.respondText(
-                "Book with id $id not found.",
-                status = HttpStatusCode.NotFound
-            )
         }
     }
-
 }

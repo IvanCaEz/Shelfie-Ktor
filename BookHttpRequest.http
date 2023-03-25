@@ -4,7 +4,7 @@ POST http://127.0.0.1:8080/books
 Content-Type: application/json
 
 {
-  "idBook": 1,
+  "idBook": "1",
   "title": "Romeo & Juliet",
   "author": "William Shakespeare",
   "publicationYear": 1597,
@@ -14,22 +14,22 @@ Content-Type: application/json
   "stockTotal": 20,
   "stockRemaining": 1,
   "genre": "classics",
-  "reviews":[
+  "reviews":{ "1":
     {
-      "idReview": 1,
-      "idBook": 1,
-      "idUser": 1,
+      "idReview": "1",
+      "idBook": "1",
+      "idUser": "1",
       "date": 2019,
       "comment": "cinco estrellas"
     }
-  ]
+  }
 }
 ###
 POST http://127.0.0.1:8080/books
 Content-Type: application/json
 
 {
-  "idBook": 2,
+  "idBook": "2",
   "title": "Hamlet",
   "author": "William Shakespeare",
   "publicationYear": 1601,
@@ -39,14 +39,14 @@ Content-Type: application/json
   "stockTotal": 18,
   "stockRemaining": 7,
   "genre": "classics",
-  "reviews":[]
+  "reviews": {}
 }
 ###
 POST http://127.0.0.1:8080/books
 Content-Type: application/json
 
 {
-  "idBook": 3,
+  "idBook": "3",
   "title": "The Little Prince",
   "author": "Antoine de Saint-Exupéry",
   "publicationYear": 1943,
@@ -56,14 +56,14 @@ Content-Type: application/json
   "stockTotal": 12,
   "stockRemaining": 7,
   "genre": "classics",
-  "reviews":[]
+  "reviews": {}
 }
 ###
 POST http://127.0.0.1:8080/books
 Content-Type: application/json
 
 {
-  "idBook": 4,
+  "idBook": "4",
   "title": "The Cruel Prince",
   "author": "Holly Black",
   "publicationYear": 2018,
@@ -73,14 +73,14 @@ Content-Type: application/json
   "stockTotal": 5,
   "stockRemaining": 1,
   "genre": "fantasy",
-  "reviews":[]
+  "reviews": {}
 }
 ###
 POST http://127.0.0.1:8080/books
 Content-Type: application/json
 
 {
-  "idBook": 5,
+  "idBook": "5",
   "title": "The Wicked King",
   "author": "Holly Black",
   "publicationYear": 2019,
@@ -90,14 +90,14 @@ Content-Type: application/json
   "stockTotal": 5,
   "stockRemaining": 2,
   "genre": "fantasy",
-  "reviews":[]
+  "reviews":{}
 }
 ###
 POST http://127.0.0.1:8080/books
 Content-Type: application/json
 
 {
-  "idBook": 6,
+  "idBook": "6",
   "title": "The Queen of Nothing",
   "author": "Holly Black",
   "publicationYear": 2019,
@@ -107,14 +107,14 @@ Content-Type: application/json
   "stockTotal": 5,
   "stockRemaining": 3,
   "genre": "fantasy",
-  "reviews":[]
+  "reviews":{}
 }
 ###
 POST http://127.0.0.1:8080/books
 Content-Type: application/json
 
 {
-  "idBook": 7,
+  "idBook": "7",
   "title": "Cinder",
   "author": "Marissa Meyer",
   "publicationYear": 2012,
@@ -124,22 +124,22 @@ Content-Type: application/json
   "stockTotal": 5,
   "stockRemaining": 2,
   "genre": "fantasy",
-  "reviews":[
+  "reviews":{ "1":
     {
-      "idReview": 1,
-      "idBook": 7,
-      "idUser": 2,
+      "idReview": "1",
+      "idBook": "7",
+      "idUser": "2",
       "date": 2022,
       "comment": "Muy nice"
     }
-  ]
+  }
 }
 ###
 POST http://127.0.0.1:8080/books
 Content-Type: application/json
 
 {
-  "idBook": 8,
+  "idBook": "8",
   "title": "Six of Crows",
   "author": "Leigh Bardugo",
   "publicationYear": 2015,
@@ -149,14 +149,14 @@ Content-Type: application/json
   "stockTotal": 8,
   "stockRemaining": 4,
   "genre": "fantasy",
-  "reviews":[]
+  "reviews":{}
 }
 ###
 POST http://127.0.0.1:8080/books
 Content-Type: application/json
 
 {
-  "idBook": 9,
+  "idBook": "9",
   "title": "Crooked Kingdom",
   "author": "Leigh Bardugo",
   "publicationYear": 2016,
@@ -166,7 +166,7 @@ Content-Type: application/json
   "stockTotal": 5,
   "stockRemaining": 3,
   "genre": "fantasy",
-  "reviews":[]
+  "reviews": {}
 }
 
 ###
@@ -177,15 +177,16 @@ POST http://127.0.0.1:8080/users
 Content-Type: application/json
 
 {
-  "idUser": 1,
+  "idUser": "1",
   "name": "Niky",
   "email": "nikita@gmail.com",
   "password": "123456",
   "userType": "admin",
   "borrowedBooksCounter": 1,
-  "bookHistory": [
+  "bookHistory": {
+    "1" :
     {
-      "idBook": 1,
+      "idBook": "1",
       "title": "Romeo & Juliet",
       "author": "William Shakespeare",
       "publicationYear": 1597,
@@ -195,17 +196,18 @@ Content-Type: application/json
       "stockTotal": 20,
       "stockRemaining": 1,
       "genre": "classics",
-      "reviews": [
+      "reviews": {
+        "1" :
         {
-          "idReview": 1,
-          "idBook": 1,
-          "idUser": 1,
+          "idReview": "1",
+          "idBook": "1",
+          "idUser": "1",
           "date": 2019,
           "comment": "cinco estrellas"
         }
-      ]
+      }
     }
-  ],
+  },
   "banned": false
 }
 ###
@@ -213,15 +215,16 @@ POST http://127.0.0.1:8080/users
 Content-Type: application/json
 
 {
-  "idUser": 2 ,
+  "idUser": "2" ,
   "name": "Ivan",
   "email": "ivan@gmail.com",
   "password": "123456",
   "userType": "admin",
   "borrowedBooksCounter": 1,
-  "bookHistory": [
+  "bookHistory": {
+    "7":
     {
-      "idBook": 7,
+      "idBook": "7",
       "title": "Cinder",
       "author": "Marissa Meyer",
       "publicationYear": 2012,
@@ -231,17 +234,17 @@ Content-Type: application/json
       "stockTotal": 5,
       "stockRemaining": 2,
       "genre": "fantasy",
-      "reviews": [
+      "reviews": {"1" :
         {
-          "idReview": 1,
-          "idBook": 7,
-          "idUser": 2,
+          "idReview": "1",
+          "idBook": "7",
+          "idUser": "2",
           "date": 2022,
           "comment": "Muy nice"
         }
-      ]
+      }
     }
-  ],
+  },
       "banned": false
 }
 ###
@@ -294,9 +297,9 @@ PUT http://127.0.0.1:8080/books/7/reviews/1
 Content-Type: application/json
 
 {
-      "idReview": 1,
-      "idBook": 7,
-      "idUser": 2,
+      "idReview": "1",
+      "idBook": "7",
+      "idUser": "2",
       "date": 2022,
       "comment": "Suuuuper Nice"
     }
@@ -309,9 +312,9 @@ POST http://127.0.0.1:8080/books/2/reviews
 Content-Type: application/json
 
 {
-  "idReview": 1,
-  "idBook": 2,
-  "idUser": 2,
+  "idReview": "1",
+  "idBook": "2",
+  "idUser": "2",
   "date": 2022,
   "comment": "Profundo"
 }
@@ -342,8 +345,36 @@ Accept: application/json
 ###
 DELETE http://127.0.0.1:8080/books/2/reviews/1
 Accept: application/json
+###
+DELETE http://127.0.0.1:8080/books/9
+Accept: application/json
+
+// POST de LIBRO en libros leidos de USER
+
+###
+POST http://127.0.0.1:8080/users/2/book_history
+Content-Type: application/json
+
+{
+  "idBook": "8",
+  "title": "Six of Crows",
+  "author": "Leigh Bardugo",
+  "publicationYear": 2015,
+  "synopsis": "Ketterdam: a bustling hub of international trade where anything can be had for the right price—and no one knows that better than criminal prodigy Kaz Brekker. Kaz is offered a chance at a deadly heist that could make him rich beyond his wildest dreams. But he can’t pull it off alone...\n A convict with a thirst for revenge \nA sharpshooter who can’t walk away from a wager\nA runaway with a privileged past \nA spy known as the Wraith \nA Heartrender using her magic to survive the slums    \nA thief with a gift for unlikely escapes\nSix dangerous outcasts. One impossible heist. Kaz’s crew is the only thing that might stand between the world and destruction—if they don’t kill each other first.",
+  "bookCover": "https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1651710803i/23437156.jpg",
+  "state": true,
+  "stockTotal": 8,
+  "stockRemaining": 4,
+  "genre": "fantasy",
+  "reviews": {}
+}
+
+###
+GET http://127.0.0.1:8080/users/2/book_history
+Accept: application/json
 
 
+###
 
 
 

@@ -4,10 +4,9 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class Review (
-    var idReview: Int,
-    var idBook : Int,
-    var idUser: Int,
+    var idReview: String,
+    var idBook : String,
+    var idUser: String,
     var date: Int,
     var comment: String
 )
-val reviewList = mutableListOf<Review>()
