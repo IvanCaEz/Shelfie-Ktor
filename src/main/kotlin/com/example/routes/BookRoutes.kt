@@ -29,7 +29,7 @@ fun Route.bookRouting() {
             if (bookList.isNotEmpty()) {
                 if (bookList.containsKey(id) && bookList[id] != null) {
                     return@get call.respond(bookList[id]!!)
-                } else call.respondText("Book with id $id not found", status = HttpStatusCode.NotFound)
+                } else call.respondText("Book with id $id not found.", status = HttpStatusCode.NotFound)
             } else call.respondText("No books found.", status = HttpStatusCode.OK)
         }
 
@@ -37,13 +37,13 @@ fun Route.bookRouting() {
 
         post {
             val book = call.receive<Book>()
-            // Si no hay ningún libro ya con ese id, lo añadimos
-           if (!bookList.containsKey(book.idBook)) {
+            // Si no hay ningún libro ya con ese id o ha sido borrado (el valor es nulo), lo añadimos a la booklist con esa ID
+           if (!bookList.containsKey(book.idBook) ||  bookList[book.idBook] == null) {
                 bookList[book.idBook] = book
-                call.respondText("Book stored correctly", status = HttpStatusCode.Created)
+                call.respondText("Book stored correctly.", status = HttpStatusCode.Created)
                 return@post call.respond(book)
            } else {
-                 return@post call.respondText("Book with id ${book.idBook} already exists",
+                 return@post call.respondText("Book with id ${book.idBook} already exists.",
                      status = HttpStatusCode.OK )
                }
             }
@@ -118,7 +118,7 @@ fun Route.bookRouting() {
         // Put solo pueden hacerlo los administradores
         put("{id?}") {
             if (call.parameters["id"].isNullOrBlank()) return@put call.respondText(
-                "Missing id",
+                "Missing id.",
                 status = HttpStatusCode.BadRequest
             )
             val id = call.parameters["id"]
@@ -128,7 +128,7 @@ fun Route.bookRouting() {
                 if (bookList.containsKey(id)) {
                     bookList[id!!] = bookToUpdate
                     return@put call.respondText(
-                        "Book with id $id has been updated", status = HttpStatusCode.Accepted)
+                        "Book with id $id has been updated.", status = HttpStatusCode.Accepted)
                 } else return@put call.respondText("Book with id $id not found.",
                     status = HttpStatusCode.NotFound)
             } else call.respondText("No books found.", status = HttpStatusCode.OK)
@@ -136,13 +136,13 @@ fun Route.bookRouting() {
         //Delete solo pueden hacerlo los admins
         delete("{id}") {
             if (call.parameters["id"].isNullOrBlank()) return@delete call.respondText(
-                "Missing book id",
+                "Missing book id.",
                 status = HttpStatusCode.BadRequest
             )
             val id = call.parameters["id"]
             if (bookList.isNotEmpty()) {
                 if (bookList.containsKey(id)) {
-                    bookList.remove(id)
+                    bookList[id!!] = null
                     return@delete call.respondText(
                         "Book removed successfully.", status = HttpStatusCode.Accepted
                     )

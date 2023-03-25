@@ -25,17 +25,6 @@ fun Route.reviewRouting() {
                 } else call.respondText("Book with id $bookID not found", status = HttpStatusCode.NotFound)
             } else call.respondText("No books found.", status = HttpStatusCode.OK)
         }
-        /*
-            for (book in bookList){
-                if (book.idBook == bookID?.toInt()){
-                    if (book.reviews.isNotEmpty()){
-                        call.respond(book.reviews)
-                    }
-                } else {
-                    call.respondText("No reviews found in book $bookID", status = HttpStatusCode.OK)
-                }
-            }
-             */
 
         // GET por ID
 
@@ -62,50 +51,21 @@ fun Route.reviewRouting() {
 
 
         }
-        /*
-            for (book in bookList) {
-                if (book.idBook == bookID!!.toInt()){
-                    for (comment in book.reviews){
-                        if (comment.idReview == id!!.toInt()){
-                            return@get call.respond(comment)
-                        }
-                    }
-                }
-            }
-            call.respondText(
-                "Review with id $id not found on book with id $bookID",
-                status = HttpStatusCode.NotFound
-            )
-
-             */
-
 
         // POST
 
         post {
             val bookID = call.parameters["bookid"]
             val review = call.receive<Review>()
-
-            //if (!bookList[bookID]!!.reviews.containsKey(review.idReview)) {
+            // Si no hay una review con el ID de la review o lo hay pero el valor es nulo, se añade
+            if (!bookList[bookID]!!.reviews.containsKey(review.idReview) ||
+                bookList[bookID]!!.reviews[review.idReview] == null ) {
                 bookList[bookID]!!.reviews[review.idReview] = review
-                call.respondText("Review stored correctly", status = HttpStatusCode.Created)
+                call.respondText("Review stored correctly.", status = HttpStatusCode.Created)
                 return@post call.respond(review)
-            //} else return@post call.respondText("Review with id ${review.idReview} already exists", status = HttpStatusCode.OK)
+            } else return@post call.respondText("Review with id ${review.idReview} already exists.", status = HttpStatusCode.OK)
         }
-        /*
-            for (book in bookList){
-                if ((book.idBook == bookID?.toInt())){
-                    // Si ya existe la review con el mismo id, no se almacena
-                    if (book.reviews.none { it.idReview == review.idReview }){
-                        book.reviews.add(review)
-                    } else {
-                        return@post call.respondText(
-                            "Review with id ${review.idReview} already exists", status = HttpStatusCode.OK)
-                    }
-                    call.respondText("Review stored correctly", status = HttpStatusCode.Created)
-                }
-            }
-             */
+
         // PUT
         put("{id}") {
             val bookID = call.parameters["bookid"]
@@ -129,32 +89,6 @@ fun Route.reviewRouting() {
                 } else call.respondText("Book with id $bookID not found", status = HttpStatusCode.NotFound)
             } else call.respondText("No books found.", status = HttpStatusCode.OK)
         }
-        /*
-            for (book in bookList){
-                if (book.idBook == bookID.toInt()){
-                    for (comment in book.reviews) {
-                        if (comment.idReview == reviewID?.toInt()) {
-                            comment.idBook = commentToUpdate.idBook
-                            comment.idUser = commentToUpdate.idUser
-                            comment.comment = commentToUpdate.comment
-                            comment.date = commentToUpdate.date
-                            comment.idBook = commentToUpdate.idBook
-
-                            return@put call.respondText(
-                                "Comment with id $reviewID from book with id ${book.idBook} has been updated",
-                                status = HttpStatusCode.Accepted
-                            )
-                        }
-                    }
-                    call.respondText(
-                        "Review with id $$reviewID not found",
-                        status = HttpStatusCode.NotFound
-                    )
-                }
-            }
-
-             */
-
 
         // Delete
 
@@ -168,37 +102,17 @@ fun Route.reviewRouting() {
             if (bookList.isNotEmpty()) {
                 if (bookList[bookID]!!.reviews.isNotEmpty()) {
                     if (bookList[bookID]!!.reviews.containsKey(reviewID)){
-                        bookList[bookID]!!.reviews.remove(reviewID)
+                        bookList[bookID]!!.reviews[reviewID!!] = null
                         return@delete call.respondText(
-                            "Review with id $reviewID removed from book with id $bookID",
+                            "Review with id $reviewID removed from book with id $bookID.",
                             status = HttpStatusCode.Accepted)
                     } else  call.respondText(
-                        "Review with id $reviewID from book with id $bookID not found",
+                        "Review with id $reviewID from book with id $bookID not found.",
                         status = HttpStatusCode.NotFound)
                 }else call.respondText("No reviews found in book with id $bookID.", status = HttpStatusCode.OK)
             } else call.respondText("No books found.", status = HttpStatusCode.OK)
 
         }
-        /*
-            for (book in bookList) {
-                if (book.idBook == bookID.toInt()) {
-                    for (comment in book.reviews){
-                        if (comment.idReview == commentID?.toInt()){
-                            book.reviews.remove(comment)
-                            return@delete call.respondText("Comment with id $commentID removed from book with id $bookID",
-                                status = HttpStatusCode.Accepted)
-                        }
-                    }
-
-                }
-            }
-            call.respondText(
-                "Review with id $commentID from book with id $bookID not found",
-                status = HttpStatusCode.NotFound
-            )
-
-        }
-             */
 
     }
 }

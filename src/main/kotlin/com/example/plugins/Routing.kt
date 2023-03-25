@@ -1,5 +1,6 @@
 package com.example.plugins
 
+import com.example.routes.authorRouting
 import com.example.routes.bookRouting
 import com.example.routes.reviewRouting
 import com.example.routes.userRouting
@@ -17,6 +18,7 @@ fun Application.configureRouting() {
         bookRouting()
         userRouting()
         reviewRouting()
+        authorRouting()
     }
 }
 

@@ -375,6 +375,75 @@ Accept: application/json
 
 
 ###
+POST http://127.0.0.1:8080/books
+Content-Type: application/json
+
+{
+  "idBook": "9",
+  "title": "Crooked Kingdom",
+  "author": "Leigh Bardugo",
+  "publicationYear": 2016,
+  "synopsis": "Kaz Brekker and his crew of deadly outcasts have just pulled off a heist so daring even they didn't think they'd survive. But instead of divvying up a fat reward, they're right back to fighting for their lives.\nDouble-crossed and badly weakened, the crew is low on resources, allies, and hope. As powerful forces from around the world descend on Ketterdam to root out the secrets of the dangerous drug known as jurda parem, old rivals and new enemies emerge to challenge Kaz's cunning and test the team's fragile loyalties.\nA war will be waged on the city's dark and twisting streets - a battle for revenge and redemption that will decide the fate of the Grisha world.",
+  "bookCover": "",
+  "state": true,
+  "stockTotal": 5,
+  "stockRemaining": 3,
+  "genre": "fantasy",
+  "reviews": {}
+}
+
+###
+GET http://127.0.0.1:8080/users/2/book_history
+Content-Type: application/json
+
+###
+GET http://127.0.0.1:8080/books/8
+Content-Type: application/json
+
+###
+POST http://127.0.0.1:8080/books
+Content-Type: application/json
+
+{
+  "idBook": "8",
+  "title": "Six of Crows",
+  "author": "Leigh Bardugo",
+  "publicationYear": 2015,
+  "synopsis": "Ketterdam: a bustling hub of international trade where anything can be had for the right price—and no one knows that better than criminal prodigy Kaz Brekker. Kaz is offered a chance at a deadly heist that could make him rich beyond his wildest dreams. But he can’t pull it off alone...\n A convict with a thirst for revenge \nA sharpshooter who can’t walk away from a wager\nA runaway with a privileged past \nA spy known as the Wraith \nA Heartrender using her magic to survive the slums    \nA thief with a gift for unlikely escapes\nSix dangerous outcasts. One impossible heist. Kaz’s crew is the only thing that might stand between the world and destruction—if they don’t kill each other first.",
+  "bookCover": "https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1651710803i/23437156.jpg",
+  "state": true,
+  "stockTotal": 8,
+  "stockRemaining": 4,
+  "genre": "fantasy",
+  "reviews": {}
+}
 
 
+###
+POST http://127.0.0.1:8080/books/8/reviews
+Content-Type: application/json
 
+{
+  "idReview": "1",
+  "idBook": "8",
+  "idUser": "2",
+  "date": 2022,
+  "comment": "Kaz mola"
+}
+
+###
+DELETE http://127.0.0.1:8080/books/8/reviews/1
+Accept: application/json
+
+###
+GET http://127.0.0.1:8080/books/8/reviews
+Content-Type: application/json
+
+
+###
+DELETE http://127.0.0.1:8080/books/2/reviews/1
+Accept: application/json
+
+###
+GET http://127.0.0.1:8080/author/Leigh Bardugo
+Content-Type: application/json
