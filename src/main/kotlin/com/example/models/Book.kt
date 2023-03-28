@@ -8,7 +8,7 @@ data class Book (
     var idBook: String,
     var title: String,
     var author: String,
-    var publicationYear: Int,
+    var publicationYear: String,
     var synopsis: String,
     var bookCover: String,
     var state: Boolean,

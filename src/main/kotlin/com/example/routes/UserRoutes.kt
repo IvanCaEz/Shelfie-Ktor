@@ -56,9 +56,10 @@ fun Route.userRouting(){
         // Get historial de libros leídos
 
         // POST
-
+        // En vez de verificar la id (que debería calcularse sola), verificamos que el correo no esté repetido
         post {
             val user = call.receive<User>()
+
             // Si no hay un usuario con ese ID o lo hay pero el valor es nulo (ha sido eliminado), se añade
            if (!userList.containsKey(user.idUser) || userList[user.idUser] == null){
                 userList[user.idUser] = user

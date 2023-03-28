@@ -1,13 +1,16 @@
 package com.example.routes
 
 import com.example.models.Book
+import com.example.models.Review
 import com.example.models.bookList
 import com.example.models.userList
 import io.ktor.http.*
+import io.ktor.http.content.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import java.io.File
 
 fun Route.bookRouting() {
     route("/books") {
@@ -50,10 +53,12 @@ fun Route.bookRouting() {
 
 
 
+
+
+
         /*
-        Esto de las imágenes no logro hacerlo funcionar... preguntar a Jordi el próximo día
-        post {
-           // val book = call.receive<Book>()
+         post {
+            // val book = call.receive<Book>()
             var bookID = 0
             var bookTitle = ""
             var author = ""
@@ -64,7 +69,7 @@ fun Route.bookRouting() {
             var stockTotal = 0
             var stockRemaining = 0
             var genre = ""
-            val reviews = mutableListOf<Review>()
+            var reviews = mutableMapOf<String, Review?>()
             val bookData = call.receiveMultipart()
 
             // Separem el tractament de les dades entre: dades primitives i fitxers
@@ -82,6 +87,7 @@ fun Route.bookRouting() {
                             "stockTotal" -> stockTotal = part.value.toInt()
                             "stockRemaining" -> stockRemaining = part.value.toInt()
                             "genre" -> genre = part.value
+                            "reviews" -> reviews = part.value
                         }
                     }
                     // Aquí recollim els fitxers
