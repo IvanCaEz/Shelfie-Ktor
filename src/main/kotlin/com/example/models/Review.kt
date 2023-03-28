@@ -10,3 +10,4 @@ data class Review (
     var date: Int,
     var comment: String
 )
+val reviewList = mutableListOf<Review>()
