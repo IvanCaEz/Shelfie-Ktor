@@ -45,7 +45,7 @@ fun Route.bookRouting() {
             )
             val id = call.parameters["id"]
 
-            if (bookList.containsKey(id)) file = File(bookList[id]!!.bookCover)
+            if (bookList.containsKey(id)) file = File("src/main/kotlin/com/example/book-covers/" + bookList[id]!!.bookCover)
             if (file.exists()) {
                 call.respondFile(file)
             } else {
@@ -87,7 +87,7 @@ fun Route.bookRouting() {
                             book.bookCover = part.originalFileName as String
 
                             val fileBytes = part.streamProvider().readBytes()
-                            File("src/main/kotlin/com.example/book-covers/" + book.bookCover).writeBytes(fileBytes)
+                            File("src/main/kotlin/com/example/book-covers/" + book.bookCover).writeBytes(fileBytes)
                             println("Imagen subida")
                         } catch (e: FileNotFoundException){
                             println("Error " + e.message)

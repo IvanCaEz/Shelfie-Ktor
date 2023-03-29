@@ -16,5 +16,6 @@ data class Book (
     var stockRemaining: Int,
     var genre: String,
     //val reviews: MutableMap<String, Review?>
+    // añadir puntuacion
 )
 val bookList = mutableMapOf<String, Book?>()
