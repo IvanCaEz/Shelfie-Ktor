@@ -27,7 +27,7 @@ fun Route.bookRouting() {
         // Buscar por ID de libro
         get("{id}") {
             if (call.parameters["id"].isNullOrBlank()) return@get call.respondText(
-                "Missing book id", status = HttpStatusCode.BadRequest
+                "Missing book id.", status = HttpStatusCode.BadRequest
             )
             val id = call.parameters["id"]
             if (bookList.isNotEmpty()) {

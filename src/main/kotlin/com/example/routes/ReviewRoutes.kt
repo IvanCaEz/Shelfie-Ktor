@@ -25,8 +25,8 @@ fun Route.reviewRouting() {
                     val bookReviews = reviewList.filter{it.idBook == bookID}
                     if (bookReviews.isNotEmpty()){
                         return@get call.respond(bookReviews)
-                    } else call.respondText("No reviews found in book $bookID", status = HttpStatusCode.NotFound)
-                } else call.respondText("Book with id $bookID not found", status = HttpStatusCode.NotFound)
+                    } else call.respondText("No reviews found in book $bookID.", status = HttpStatusCode.NotFound)
+                } else call.respondText("Book with id $bookID not found.", status = HttpStatusCode.NotFound)
             } else call.respondText("No books found.", status = HttpStatusCode.NotFound)
         }
 
@@ -50,11 +50,11 @@ fun Route.reviewRouting() {
                             // Devolvemos el primer elemento ya que el filtro debería devolver solo una review
                             return@get call.respond(review[0])
                         } else call.respondText(
-                            "Review with id $id not found on book with id $bookID",
+                            "Review with id $id not found on book with id $bookID.",
                             status = HttpStatusCode.NotFound
                         )
-                    } else call.respondText("No reviews found in book $bookID", status = HttpStatusCode.OK)
-                } else call.respondText("Book with id $bookID not found", status = HttpStatusCode.NotFound)
+                    } else call.respondText("No reviews found in book $bookID.", status = HttpStatusCode.OK)
+                } else call.respondText("Book with id $bookID not found.", status = HttpStatusCode.NotFound)
             } else call.respondText("No books found.", status = HttpStatusCode.NotFound)
 
 
@@ -81,7 +81,7 @@ fun Route.reviewRouting() {
             val bookID = call.parameters["bookid"]
 
             if (bookID.isNullOrBlank()) return@put call.respondText(
-                "Missing book id",
+                "Missing book id.",
                 status = HttpStatusCode.BadRequest
             )
             val bookReviews = reviewList.filter{it.idBook == bookID}
@@ -97,9 +97,9 @@ fun Route.reviewRouting() {
                         reviewList.remove(review[0])
                         reviewList.add(commentToUpdate)
                             return@put call.respondText(
-                                "Review with id $reviewID has been updated", status = HttpStatusCode.Accepted)
-                        } else call.respondText("Review with id $reviewID not found in book $bookID", status = HttpStatusCode.NotFound)
-                    } else call.respondText("No reviews found in book $bookID", status = HttpStatusCode.OK)
+                                "Review with id $reviewID has been updated.", status = HttpStatusCode.Accepted)
+                        } else call.respondText("Review with id $reviewID not found in book $bookID.", status = HttpStatusCode.NotFound)
+                    } else call.respondText("No reviews found in book $bookID.", status = HttpStatusCode.OK)
                 } else call.respondText("No books found.", status = HttpStatusCode.NotFound)
             }
         }

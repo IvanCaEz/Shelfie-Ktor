@@ -39,7 +39,7 @@ fun Route.userRouting(){
 
         get ("{id?}/book_history") {
             if (call.parameters["id"].isNullOrBlank()) return@get call.respondText(
-                "Missing user id", status = HttpStatusCode.BadRequest
+                "Missing user id.", status = HttpStatusCode.BadRequest
             )
             val id = call.parameters["id"]
             if (userList.isNotEmpty()) {
@@ -49,15 +49,15 @@ fun Route.userRouting(){
                     if (userList[id]?.bookHistory!!.isNotEmpty() ) {
                         return@get call.respond(userList[id]?.bookHistory!!)
                     } else {
-                        return@get call.respondText("User with id $id hasn't read any books yet")
+                        return@get call.respondText("User with id $id hasn't read any books yet.")
                     }
-                } else call.respondText("User with id $id not found", status = HttpStatusCode.NotFound)
+                } else call.respondText("User with id $id not found.", status = HttpStatusCode.NotFound)
             } else call.respondText("No users found.", status = HttpStatusCode.OK)
         }
 
         // Get imagen del usuario
 
-        get("{id?}/userImage") {
+        get("{id?}/user_image") {
             var file: File = File("")
             if (call.parameters["id"].isNullOrBlank()) return@get call.respondText(
                 "Missing user id.",

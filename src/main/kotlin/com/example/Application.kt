@@ -13,8 +13,8 @@ fun main() {
 }
 
 /**
+ *  AVISO: Las imágenes tardan en aparecer en el intelliJ pero sí que se suben
  * Cosas que hacer
- *  - Subir imágenes
  *  - Pasar de JSON a SQL ??
  *
  *  Android
@@ -23,14 +23,17 @@ fun main() {
  *          - Cuando el usuario se registra en la app, calcular el tamaño de la lista y sumarle 1,
  *            entonces pasamos ese número como ID
  *                  - Lo mismo al calcular las IDs de las reviews y libros
+ *          - Tener una imagen placeholder en el android y usarla como foto de perfil del usuario (crear usuario
+ *          con ese campo vacío) y solo cambiarlo cuando el usuario quiera en su perfil O obligarle a elegirla
+ *          al principio
  *
  * Cosas que pensar
- *  - User: almacenar libro entero o solo ID del libro?
  *  - Cómo vincular una review al libro y al usuario a la misma vez?
  *  ---------------------------No prioritario------------------------------------
  * - Libro: Añadir puntuación?
- *             - Hacer que en la review sea obligatorio añadir una puntuación
+ *             - Hacer que en la review sea obligatorio añadir una puntuación (del 1 al 5 "estrellitas")
  *             - Entonces calculamos la puntuación media de todas las reviews de todos los usuarios
+ *             - Debería actualizarse siempre que se añada una review a ese libro
  *
  */
 

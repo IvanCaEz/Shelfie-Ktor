@@ -11,7 +11,7 @@ import io.ktor.util.*
 //Esta ruta solo se podrá usar para obtener los libros que ha escrito un determinado Autor
 fun Route.authorRouting(){
     route("/author"){
-        //
+        // Seguramente haya que pulir esto
         get ( "{name}" ){
             if (call.parameters["name"].isNullOrBlank()) return@get call.respondText(
                 "Missing author name.", status = HttpStatusCode.BadRequest

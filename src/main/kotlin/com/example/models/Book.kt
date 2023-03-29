@@ -14,7 +14,7 @@ data class Book (
     var state: Boolean,
     var stockTotal: Int,
     var stockRemaining: Int,
-    var genre: String,
+    var genre: String
     //val reviews: MutableMap<String, Review?>
     // añadir puntuacion
 )
