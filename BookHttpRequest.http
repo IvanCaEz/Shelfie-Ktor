@@ -368,8 +368,7 @@ Content-Type: application/json
   "state": true,
   "stockTotal": 8,
   "stockRemaining": 4,
-  "genre": "fantasy",
-  "reviews": {}
+  "genre": "fantasy"
 }
 
 

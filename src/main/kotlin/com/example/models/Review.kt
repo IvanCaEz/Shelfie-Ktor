@@ -8,6 +8,7 @@ data class Review (
     var idBook : String,
     var idUser: String,
     var date: String,
-    var comment: String
+    var comment: String,
+    var rating: Int
 )
 val reviewList = mutableListOf<Review>()

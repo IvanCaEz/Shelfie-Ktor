@@ -53,6 +53,22 @@ fun Route.bookRouting() {
             }
         }
 
+        get("{id?}/rating") {
+            var file: File = File("")
+            if (call.parameters["id"].isNullOrBlank()) return@get call.respondText(
+                "Missing book id.",
+                status = HttpStatusCode.BadRequest
+            )
+            val id = call.parameters["id"]
+
+            if (bookList.containsKey(id)) file = File("src/main/kotlin/com/example/book-covers/" + bookList[id]!!.bookCover)
+            if (file.exists()) {
+                call.respondFile(file)
+            } else {
+                call.respondText("No image found.", status = HttpStatusCode.NotFound)
+            }
+        }
+
         // Post solo pueden hacerlo los admins
 
         post {
