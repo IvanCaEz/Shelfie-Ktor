@@ -11,4 +11,3 @@ data class Review (
     var comment: String,
     var rating: Int
 )
-val reviewList = mutableListOf<Review>()

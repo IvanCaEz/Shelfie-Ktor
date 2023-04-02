@@ -15,7 +15,7 @@ fun main() {
 /**
  *  AVISO: Las imágenes tardan en aparecer en el intelliJ pero sí que se suben
  * Cosas que hacer
- *  - Pasar de JSON a SQL ??
+ *  - Arreglar PUT de usuarios y libros (la imagen da problemas)
  *
  *  Android
  *  - Desde la app se pasan ya todos los datos tratados (arreglar los posts y eso):
@@ -31,11 +31,11 @@ fun main() {
  *
  *
  * Cosas que pensar
- *  - Cómo vincular una review al libro y al usuario a la misma vez?
  *  ---------------------------No prioritario------------------------------------
+ *  Android
  * - Libro: Añadir puntuación?
  *             - Hacer que en la review sea obligatorio añadir una puntuación (del 1 al 5 "estrellitas")
- *             - Entonces calculamos la puntuación media de todas las reviews de todos los usuarios
+ *             - Entonces calculamos la puntuación media de todas las reviews de todos los usuarios (HECHO)
  *             - Debería actualizarse siempre que se añada una review a ese libro
  *
  */

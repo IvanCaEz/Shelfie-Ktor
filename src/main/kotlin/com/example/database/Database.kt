@@ -1,9 +1,6 @@
 package com.example.database
 
-import com.example.models.Book
-import com.example.models.User
-import com.example.models.UserType
-import com.example.models.userList
+import com.example.models.*
 import io.ktor.util.reflect.*
 import java.sql.Connection
 import java.sql.DriverManager
@@ -59,7 +56,8 @@ class Database {
     fun getBookByID(bookID: String): Book {
         var book = Book(
             "", "", "", "", "", "", true,
-            0, 0, "")
+            0, 0, ""
+        )
         try {
             val connection = connectToDB()
             val statement = connection.createStatement()
@@ -79,34 +77,7 @@ class Database {
         return book
     }
 
-    fun getBookByTitle(title: String): Book {
-        println("Titulo recibido: $title")
-        var book = Book(
-            "", "", "", "", "", "", true,
-            0, 0, "")
-        try {
-            val connection = connectToDB()
-
-            val statement = connection.createStatement()
-            val bookSelect = "SELECT * FROM books WHERE title = $title"
-            val result = statement.executeQuery(bookSelect)
-
-            while (result.next()) {
-                println(result.getString("title"))
-                println(result.getString("id_book"))
-                book = getBookFromResult(result)
-            }
-            println("Desde DB: ID: ${book.idBook} Title: ${book.title}")
-            statement.close()
-            connection.close()
-            println("Disconnected from database")
-
-        } catch (e: SQLException) {
-            println("Error " + e.errorCode + ": " + e.message)
-        }
-        return book
-    }
-    fun updateBook(bookID: String, bookToUpdate: Book){
+    fun updateBook(bookID: String, bookToUpdate: Book) {
         try {
             val connection = connectToDB()
 
@@ -132,6 +103,7 @@ class Database {
             println("Error " + e.errorCode + ": " + e.message)
         }
     }
+
     fun insertNewBook(newBook: Book) {
         try {
             val connection = connectToDB()
@@ -190,7 +162,7 @@ class Database {
                 val history = result.getArray("book_history").array as Array<Int>
                 println(history.size)
 
-                val user = getUserFromResult(result,history)
+                val user = getUserFromResult(result, history)
 
                 userList.add(user)
             }
@@ -204,9 +176,11 @@ class Database {
         return userList.toList()
     }
 
-    fun getUserByID( userID: String): User {
-        var user = User("", "", "", "", UserType.NORMAL,
-            0, mutableSetOf<Int>(), false, "")
+    fun getUserByID(userID: String): User {
+        var user = User(
+            "", "", "", "", UserType.NORMAL,
+            0, mutableSetOf<Int>(), false, ""
+        )
         try {
             val connection = connectToDB()
 
@@ -228,7 +202,7 @@ class Database {
         return user
     }
 
-    fun updateUser(userID: String, userToUpdate: User){
+    fun updateUser(userID: String, userToUpdate: User) {
         //No updatea los libros leídos porque ya tenemos rutas y funciones específicas
         try {
             val connection = connectToDB()
@@ -279,10 +253,12 @@ class Database {
             preparedUser.setString(2, newUser.name)
             preparedUser.setString(3, newUser.email)
             preparedUser.setString(4, newUser.password)
-            preparedUser.setString(5, when (newUser.userType){
-                UserType.ADMIN -> "ADMIN"
-                else -> "NORMAL"
-            })
+            preparedUser.setString(
+                5, when (newUser.userType) {
+                    UserType.ADMIN -> "ADMIN"
+                    else -> "NORMAL"
+                }
+            )
             preparedUser.setInt(6, newUser.borrowedBooksCounter)
             //Al crear usuario la lista de leídos está vacía
             val booksRead = connection.createArrayOf("INT", newUser.bookHistory.toTypedArray())
@@ -395,6 +371,141 @@ class Database {
             result.getBoolean("banned"),
             result.getString("user_image")
         )
+    }
+
+    /**
+     * Esta función transforma el resultado de la query de la base de datos en una review.
+     * @param result El resultado de la query con toda la info de la review
+     */
+    private fun getReviewFromResult(result: ResultSet): Review {
+        return Review(
+            result.getString("id_review"),
+            result.getString("id_book"),
+            result.getString("id_user"),
+            result.getString("date"),
+            result.getString("review"),
+            result.getInt("rating")
+        )
+    }
+
+    // REVIEWS
+    fun getAllReviewsOfBook(bookID: String): List<Review> {
+        val reviewList = mutableListOf<Review>()
+
+        try {
+            val connection = connectToDB()
+            val statement = connection.createStatement()
+            val reviewSelect = "SELECT * FROM reviews WHERE id_book = $bookID"
+            val result = statement.executeQuery(reviewSelect)
+
+            while (result.next()) {
+                val review = getReviewFromResult(result)
+                reviewList.add(review)
+            }
+            statement.close()
+            connection.close()
+            println("Disconnected from database")
+
+        } catch (e: SQLException) {
+            println("Error " + e.errorCode + ": " + e.message)
+        }
+        return reviewList.toList()
+    }
+
+    fun getBookReviewByID(bookID: String, reviewID: String): Review {
+        var review = Review("", "", "", "", "", 0)
+        try {
+            val connection = connectToDB()
+            val statement = connection.createStatement()
+            val reviewSelect = "SELECT * FROM reviews WHERE id_book = $bookID AND id_review = $reviewID"
+            val result = statement.executeQuery(reviewSelect)
+
+            while (result.next()) {
+                review = getReviewFromResult(result)
+            }
+            statement.close()
+            connection.close()
+            println("Disconnected from database")
+
+        } catch (e: SQLException) {
+            println("Error " + e.errorCode + ": " + e.message)
+        }
+        return review
+    }
+
+    fun deleteReview(bookID: String, reviewID: String) {
+        try {
+            val connection = connectToDB()
+            val statement = connection.createStatement()
+            val removeReview = "DELETE FROM reviews WHERE id_book = $bookID AND id_review = $reviewID"
+            statement.executeUpdate(removeReview)
+            statement.close()
+            connection.close()
+            println("Disconnected from database")
+
+        } catch (e: SQLException) {
+            println("Error " + e.errorCode + ": " + e.message)
+        }
+    }
+
+    fun deleteReviewsFromUser(userID: String){
+        try {
+            val connection = connectToDB()
+            val statement = connection.createStatement()
+            val removeReview = "DELETE FROM reviews WHERE id_user = $userID"
+            statement.executeUpdate(removeReview)
+            statement.close()
+            connection.close()
+            println("Disconnected from database")
+
+        } catch (e: SQLException) {
+            println("Error " + e.errorCode + ": " + e.message)
+        }
+    }
+
+    fun insertNewReview(newReview: Review) {
+        try {
+            val connection = connectToDB()
+            val reviewSentence = "INSERT INTO reviews VALUES (?, ?, ?, ?, ?, ?)"
+            val preparedReview: PreparedStatement = connection.prepareStatement(reviewSentence)
+            preparedReview.setInt(1, newReview.idReview.toInt())
+            preparedReview.setInt(2, newReview.idBook.toInt())
+            preparedReview.setInt(3, newReview.idUser.toInt())
+            preparedReview.setString(4, newReview.date)
+            preparedReview.setString(5, newReview.comment)
+            preparedReview.setInt(6, newReview.rating)
+            preparedReview.executeUpdate()
+            preparedReview.close()
+            connection.close()
+            println("Disconnected from database")
+
+        } catch (e: SQLException) {
+            println("Error " + e.errorCode + ": " + e.message)
+        }
+    }
+
+    fun updateReview(reviewID: String, reviewToUpdate: Review) {
+        //Sólo updatea la fecha, el comentario y la puntuación
+        try {
+            val connection = connectToDB()
+
+            val reviewSentence =
+                "UPDATE reviews SET date=?, review=?, rating=? WHERE id_review = $reviewID " +
+                        "AND id_book = ${reviewToUpdate.idBook} AND id_user = ${reviewToUpdate.idUser}"
+            val preparedReview: PreparedStatement = connection.prepareStatement(reviewSentence)
+            preparedReview.setString(1, reviewToUpdate.date)
+            preparedReview.setString(2, reviewToUpdate.comment)
+            preparedReview.setInt(3, reviewToUpdate.rating)
+
+            preparedReview.executeUpdate()
+            preparedReview.close()
+
+            connection.close()
+            println("Disconnected from database")
+
+        } catch (e: SQLException) {
+            println("Error " + e.errorCode + ": " + e.message)
+        }
     }
 
 }

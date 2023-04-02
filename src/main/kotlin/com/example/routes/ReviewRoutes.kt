@@ -1,9 +1,8 @@
 package com.example.routes
 
+import com.example.database.Database
 import com.example.models.Review
 import com.example.models.bookList
-import com.example.models.reviewList
-import com.example.models.userList
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
@@ -19,18 +18,19 @@ fun Route.reviewRouting() {
         get {
             val bookID = call.parameters["bookid"]
 
-            if (bookList.isNotEmpty()) {
-                if (bookList.containsKey(bookID)) {
+            val listOfBooksFromDB = Database().getAllBooks()
+            if (listOfBooksFromDB.isNotEmpty()) {
+                if (listOfBooksFromDB.filter { it.idBook == bookID }.size == 1) {
                     //Miramos que no esté vacía la lista de reviews del libro
-                    val bookReviews = reviewList.filter{it.idBook == bookID}
-                    if (bookReviews.isNotEmpty()){
+                    val bookReviews = Database().getAllReviewsOfBook(bookID!!)
+                    if (bookReviews.isNotEmpty()) {
                         return@get call.respond(bookReviews)
                     } else call.respondText("No reviews found in book $bookID.", status = HttpStatusCode.NotFound)
                 } else call.respondText("Book with id $bookID not found.", status = HttpStatusCode.NotFound)
             } else call.respondText("No books found.", status = HttpStatusCode.NotFound)
         }
 
-        // GET por ID
+        // GET por ID de la review
 
         get("{id}") {
             if (call.parameters["id"].isNullOrBlank()) return@get call.respondText(
@@ -39,24 +39,24 @@ fun Route.reviewRouting() {
             val bookID = call.parameters["bookid"]
             val id = call.parameters["id"]
 
-            if (bookList.isNotEmpty()) {
-                if (bookList.containsKey(bookID)) {
+            val listOfBooksFromDB = Database().getAllBooks()
+            if (listOfBooksFromDB.isNotEmpty()) {
+                if (listOfBooksFromDB.filter { it.idBook == bookID }.size == 1) {
                     //Miramos que no esté vacía la lista de reviews del libro
-                    val bookReviews = reviewList.filter{it.idBook == bookID}
+                    val bookReviews = Database().getAllReviewsOfBook(bookID!!)
                     if (bookReviews.isNotEmpty()) {
-                        // Filtramos las reviews del libro y obtenemos una lista con la review que que queremos
-                        val review = bookReviews.filter { it.idReview == id }
-                        if (review.isNotEmpty()) {
-                            // Devolvemos el primer elemento ya que el filtro debería devolver solo una review
-                            return@get call.respond(review[0])
+                        val review = Database().getBookReviewByID(bookID, id!!)
+                        // Si el ID de la review es un string vacío significa que no hay review
+                        if (review.idReview != "") {
+                            return@get call.respond(review)
                         } else call.respondText(
                             "Review with id $id not found on book with id $bookID.",
                             status = HttpStatusCode.NotFound
                         )
+
                     } else call.respondText("No reviews found in book $bookID.", status = HttpStatusCode.OK)
                 } else call.respondText("Book with id $bookID not found.", status = HttpStatusCode.NotFound)
             } else call.respondText("No books found.", status = HttpStatusCode.NotFound)
-
 
         }
 
@@ -66,69 +66,84 @@ fun Route.reviewRouting() {
             val bookID = call.parameters["bookid"]
             val reviewCall = call.receive<Review>()
             // Filtramos lista de reviews por ID de libro y filtramos de nuevo por ID de review
-            val bookReviews = reviewList.filter{it.idBook == bookID}
-            val review = bookReviews.filter { it.idReview == reviewCall.idReview }
+
             // Si está vacía la añadimos
-            if (review.isEmpty()){
-                reviewList.add(reviewCall)
+            val listOfBooksFromDB = Database().getAllBooks()
+            if (listOfBooksFromDB.filter { it.idBook == bookID }.size == 1) {
+                val bookReviews = Database().getAllReviewsOfBook(bookID!!)
+                var nextID = (bookReviews.size + 1)
+                var foundID = false
+                for (n in 1..nextID) {
+                    if (bookReviews.none { it.idReview == n.toString() }) {
+                        nextID = n
+                        foundID = true
+                        break
+                    }
+                }
+                if (!foundID) {
+                    while (bookReviews.filter { it.idReview == nextID.toString() }.size == 1) {
+                        nextID++
+                    }
+                }
+                reviewCall.idReview = nextID.toString()
+                println("ID REVIEW = ${reviewCall.idReview}")
+                Database().insertNewReview(reviewCall)
                 call.respondText("Review stored correctly.", status = HttpStatusCode.Created)
-                return@post call.respond(review)
-            } else return@post call.respondText("Review with id ${reviewCall.idReview} already exists.", status = HttpStatusCode.OK)
+                return@post call.respond(reviewCall)
+            } else return@post call.respondText(
+                "Book with id ${reviewCall.idBook} doesn't exists.",
+                status = HttpStatusCode.OK
+            )
         }
 
         // PUT
         put("{id}") {
             val bookID = call.parameters["bookid"]
+            val reviewID = call.parameters["id"]
 
-            if (bookID.isNullOrBlank()) return@put call.respondText(
-                "Missing book id.",
+            if (reviewID.isNullOrBlank()) return@put call.respondText(
+                "Missing review id.",
                 status = HttpStatusCode.BadRequest
             )
-            val bookReviews = reviewList.filter{it.idBook == bookID}
-            val reviewID = call.parameters["id"]
-            val commentToUpdate = call.receive<Review>()
-            val review = bookReviews.filter { it.idReview == commentToUpdate.idReview }
-            if (bookList.isNotEmpty()) {
-                // Si las el libro tiene reviews, buscamos la review que queremos
-                if (bookReviews.isNotEmpty()) {
-                    if (review.isNotEmpty()) {
-                        // Eliminamos de la lista de reviews la review que queremos updatear (vieja)
-                        // y añadimos la updateada (nueva)
-                        reviewList.remove(review[0])
-                        reviewList.add(commentToUpdate)
-                            return@put call.respondText(
-                                "Review with id $reviewID has been updated.", status = HttpStatusCode.Accepted)
-                        } else call.respondText("Review with id $reviewID not found in book $bookID.", status = HttpStatusCode.NotFound)
-                    } else call.respondText("No reviews found in book $bookID.", status = HttpStatusCode.OK)
-                } else call.respondText("No books found.", status = HttpStatusCode.NotFound)
-            }
+
+            val reviewToUpdate = call.receive<Review>()
+            if (Database().getBookByID(bookID!!).idBook != "") {
+                val review = Database().getBookReviewByID(bookID, reviewID)
+                if (review.idReview != "") {
+                    Database().updateReview(reviewID, reviewToUpdate)
+
+                    return@put call.respondText(
+                        "Review with id $reviewID has been updated.", status = HttpStatusCode.Accepted
+                    )
+                } else call.respondText(
+                    "Review with id $reviewID not found in book $bookID.",
+                    status = HttpStatusCode.NotFound
+                )
+            } else call.respondText("Book with id $bookID not found.", status = HttpStatusCode.NotFound)
         }
+
 
         // Delete
 
         delete("{id}") {
             val bookID = call.parameters["bookid"]
-            if (bookID.isNullOrBlank()) return@delete call.respondText(
-                "Missing book id",
+            val reviewID = call.parameters["id"]
+            if (reviewID.isNullOrBlank()) return@delete call.respondText(
+                "Missing review id.",
                 status = HttpStatusCode.BadRequest
             )
-            val reviewID = call.parameters["id"]
-            val bookReviews = reviewList.filter{it.idBook == bookID}
-            val review = bookReviews.filter { it.idReview == reviewID }
-            if (bookList.isNotEmpty()) {
-                if (bookReviews.isNotEmpty()) {
-                    if (review.isNotEmpty()){
-                        reviewList.remove(review[0])
-                        return@delete call.respondText(
-                            "Review with id $reviewID removed from book with id $bookID.",
-                            status = HttpStatusCode.Accepted)
-                    } else  call.respondText(
-                        "Review with id $reviewID from book with id $bookID not found.",
-                        status = HttpStatusCode.NotFound)
-                }else call.respondText("No reviews found in book with id $bookID.", status = HttpStatusCode.OK)
-            } else call.respondText("No books found.", status = HttpStatusCode.NotFound)
+
+            val review = Database().getBookReviewByID(bookID!!, reviewID)
+            if (review.idReview != "") {
+                Database().deleteReview(bookID, reviewID)
+                call.respondText("Review with id $reviewID in book $bookID has been deleted.")
+            } else call.respondText(
+                "Review with id $reviewID from book with id $bookID not found.",
+                status = HttpStatusCode.NotFound
+            )
 
         }
 
     }
+}
 

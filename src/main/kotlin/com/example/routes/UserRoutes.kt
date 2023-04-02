@@ -250,7 +250,9 @@ fun Route.userRouting() {
             val userList = Database().getAllUsers()
             if (userList.isNotEmpty()) {
                 if (userList.filter { it.idUser == id }.size == 1) {
-                    Database().deleteUser(id!!)
+                    // Primero quitamos las reviews y luego al usuario
+                    Database().deleteReviewsFromUser(id!!)
+                    Database().deleteUser(id)
                     return@delete call.respondText(
                         "User removed successfully.", status = HttpStatusCode.Accepted
                     )
