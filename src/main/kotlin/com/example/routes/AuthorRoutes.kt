@@ -1,6 +1,6 @@
 package com.example.routes
 
-import com.example.models.bookList
+import com.example.database.Database
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.response.*
@@ -11,17 +11,17 @@ import io.ktor.util.*
 //Esta ruta solo se podrá usar para obtener los libros que ha escrito un determinado Autor
 fun Route.authorRouting(){
     route("/author"){
-        // Seguramente haya que pulir esto
         get ( "{name}" ){
-            if (call.parameters["name"].isNullOrBlank()) return@get call.respondText(
+            val authorName = call.parameters["name"]
+            if (authorName.isNullOrBlank()) return@get call.respondText(
                 "Missing author name.", status = HttpStatusCode.BadRequest
             )
-            val authorName = call.parameters["name"]?.toLowerCasePreservingASCIIRules()
-            val listaLibrosPorAutor = bookList.filterValues { book ->
-                book?.author?.toLowerCasePreservingASCIIRules() == authorName }
-            if (bookList.filterValues { book ->
-                    book?.author?.toLowerCasePreservingASCIIRules() == authorName }.isNotEmpty()){
-                return@get call.respond(listaLibrosPorAutor)
+            val bookList = Database().getAllBooks()
+
+            val bookListByAuthor = bookList.filter { book ->
+                book.author.toLowerCasePreservingASCIIRules().contains(authorName)  }
+            if (bookListByAuthor.isNotEmpty()){
+                return@get call.respond(bookListByAuthor)
             } else call.respondText("No author found.", status = HttpStatusCode.OK)
         }
 

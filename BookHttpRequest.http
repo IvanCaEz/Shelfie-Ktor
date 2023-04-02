@@ -158,22 +158,9 @@ Content-Type: application/json
   "password": "123456",
   "userType": "ADMIN",
   "borrowedBooksCounter": 1,
-  "bookHistory": {
-    "1" :
-    {
-      "idBook": "1",
-      "title": "Romeo & Juliet",
-      "author": "William Shakespeare",
-      "publicationYear": "1597",
-      "synopsis": "In Romeo and Juliet, Shakespeare creates a violent world, in which two young people fall in love. It is not simply that their families disapprove; the Montagues and the Capulets are engaged in a blood feud.   In this death-filled setting, the movement from love at first sight to the lovers’ final union in death seems almost inevitable. And yet, this play set in an extraordinary world has become the quintessential story of young love. In part because of its exquisite language, it is easy to respond as if it were about all young lovers.",
-      "bookCover": "",
-      "state": true,
-      "stockTotal": 20,
-      "stockRemaining": 1,
-      "genre": "classics"
-    }
-  },
-  "banned": false
+  "bookHistory": {},
+  "banned": false,
+  "userImage": ""
 }
 ###
 POST http://127.0.0.1:8080/users
@@ -364,7 +351,24 @@ Content-Type: application/json
   "author": "Leigh Bardugo",
   "publicationYear": "2015",
   "synopsis": "Ketterdam: a bustling hub of international trade where anything can be had for the right price—and no one knows that better than criminal prodigy Kaz Brekker. Kaz is offered a chance at a deadly heist that could make him rich beyond his wildest dreams. But he can’t pull it off alone...\n A convict with a thirst for revenge \nA sharpshooter who can’t walk away from a wager\nA runaway with a privileged past \nA spy known as the Wraith \nA Heartrender using her magic to survive the slums    \nA thief with a gift for unlikely escapes\nSix dangerous outcasts. One impossible heist. Kaz’s crew is the only thing that might stand between the world and destruction—if they don’t kill each other first.",
-  "bookCover": "https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1651710803i/23437156.jpg",
+  "bookCover": "sixOfCrows.jpg",
+  "state": true,
+  "stockTotal": 8,
+  "stockRemaining": 4,
+  "genre": "fantasy"
+}
+
+###
+POST  http://127.0.0.1:8080/users/2/book_history
+Content-Type: application/json
+
+{
+  "idBook": "8",
+  "title": "Six of Crows",
+  "author": "Leigh Bardugo",
+  "publicationYear": "2015",
+  "synopsis": "Ketterdam: a bustling hub of international trade where anything can be had for the right price—and no one knows that better than criminal prodigy Kaz Brekker. Kaz is offered a chance at a deadly heist that could make him rich beyond his wildest dreams. But he can’t pull it off alone...\n A convict with a thirst for revenge \nA sharpshooter who can’t walk away from a wager\nA runaway with a privileged past \nA spy known as the Wraith \nA Heartrender using her magic to survive the slums    \nA thief with a gift for unlikely escapes\nSix dangerous outcasts. One impossible heist. Kaz’s crew is the only thing that might stand between the world and destruction—if they don’t kill each other first.",
+  "bookCover": "sixOfCrows.jpg",
   "state": true,
   "stockTotal": 8,
   "stockRemaining": 4,

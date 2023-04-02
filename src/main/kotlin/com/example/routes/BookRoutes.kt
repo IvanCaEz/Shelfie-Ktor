@@ -1,15 +1,14 @@
 package com.example.routes
 
+import com.example.database.Database
 import com.example.models.Book
-import com.example.models.Review
-import com.example.models.bookList
-import com.example.models.userList
 import io.ktor.http.*
 import io.ktor.http.content.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import io.ktor.util.*
 import java.io.File
 import java.io.FileNotFoundException
 
@@ -18,74 +17,81 @@ fun Route.bookRouting() {
         // GET
         // Todos los libros
         get {
-            if (bookList.isNotEmpty()) {
-                call.respond(bookList.values)
-            } else {
-                call.respondText("No books found.", status = HttpStatusCode.OK)
-            }
+            val listOfBooksFromDB = Database().getAllBooks()
+            if (listOfBooksFromDB.isNotEmpty()) call.respond(listOfBooksFromDB)
+            else call.respondText("No books found.", status = HttpStatusCode.OK)
         }
         // Buscar por ID de libro
         get("{id}") {
-            if (call.parameters["id"].isNullOrBlank()) return@get call.respondText(
+            val id = call.parameters["id"]
+            if (id.isNullOrBlank()) return@get call.respondText(
                 "Missing book id.", status = HttpStatusCode.BadRequest
             )
-            val id = call.parameters["id"]
-            if (bookList.isNotEmpty()) {
-                if (bookList.containsKey(id) && bookList[id] != null) {
-                    return@get call.respond(bookList[id]!!)
+
+            val listOfBooksFromDB = Database().getAllBooks()
+            if (listOfBooksFromDB.isNotEmpty()) {
+                if (listOfBooksFromDB.filter { it.idBook == id }.size == 1) {
+                    return@get call.respond(Database().getBookByID(id))
+                    //return@get call.respond(bookList[id]!!)
                 } else call.respondText("Book with id $id not found.", status = HttpStatusCode.NotFound)
             } else call.respondText("No books found.", status = HttpStatusCode.OK)
         }
+        // Buscar por título (devuelve una lista de libros que contengan ese título)
+        get("/q={title}") {
+            val bookTitle = call.parameters["title"]
+            if (bookTitle.isNullOrBlank()) return@get call.respondText(
+                "Missing book title.", status = HttpStatusCode.BadRequest
+            )
 
-        get("{id?}/bookCover") {
+            val listOfBooksFromDB = Database().getAllBooks()
+
+            if (listOfBooksFromDB.isNotEmpty()) {
+                val bookListByTittleDB = listOfBooksFromDB.filter { book ->
+                    book.title.toLowerCasePreservingASCIIRules().contains(bookTitle)
+                }
+                if (bookListByTittleDB.isNotEmpty()) {
+                    return@get call.respond(bookListByTittleDB)
+                } else call.respondText("No books found.", status = HttpStatusCode.NotFound)
+            } else call.respondText("No books found in the database.", status = HttpStatusCode.OK)
+        }
+
+        get("{id?}/book_cover") {
             var file: File = File("")
-            if (call.parameters["id"].isNullOrBlank()) return@get call.respondText(
+            val id = call.parameters["id"]
+            if (id.isNullOrBlank()) return@get call.respondText(
                 "Missing book id.",
                 status = HttpStatusCode.BadRequest
             )
-            val id = call.parameters["id"]
 
-            if (bookList.containsKey(id)) file = File("src/main/kotlin/com/example/book-covers/" + bookList[id]!!.bookCover)
-            if (file.exists()) {
-                call.respondFile(file)
-            } else {
-                call.respondText("No image found.", status = HttpStatusCode.NotFound)
+            val listOfBooksFromDB = Database().getAllBooks()
+            if (listOfBooksFromDB.isNotEmpty()) {
+                if (listOfBooksFromDB.filter { it.idBook == id }.size == 1) {
+                    file = File("src/main/kotlin/com/example/book-covers/" + listOfBooksFromDB[0].bookCover)
+                } else {
+                    call.respondText("No book found with id $id.", status = HttpStatusCode.NotFound)
+                }
+                if (file.exists()) {
+                    call.respondFile(file)
+                } else {
+                    call.respondText("No image found.", status = HttpStatusCode.NotFound)
+                }
             }
         }
 
-        get("{id?}/rating") {
-            var file: File = File("")
-            if (call.parameters["id"].isNullOrBlank()) return@get call.respondText(
-                "Missing book id.",
-                status = HttpStatusCode.BadRequest
-            )
-            val id = call.parameters["id"]
-
-            if (bookList.containsKey(id)) file = File("src/main/kotlin/com/example/book-covers/" + bookList[id]!!.bookCover)
-            if (file.exists()) {
-                call.respondFile(file)
-            } else {
-                call.respondText("No image found.", status = HttpStatusCode.NotFound)
-            }
-        }
 
         // Post solo pueden hacerlo los admins
 
         post {
-            // val book = call.receive<Book>()
             val bookData = call.receiveMultipart()
-            val book = Book(
-                "", "", "", "", "", "", true,
-                0, 0, ""
-            )
+            val book = Book("", "", "", "", "", "", true,
+                0, 0, "")
 
             // Separem el tractament de les dades entre: dades primitives i fitxers
             bookData.forEachPart { part ->
                 when (part) {
-                    // Aquí recollim les dades primitives
                     is PartData.FormItem -> {
                         when (part.name) {
-                            "idBook" -> book.idBook = part.value
+                            // "idBook" -> book.idBook = part.value
                             "title" -> book.title = part.value
                             "author" -> book.author = part.value
                             "publicationYear" -> book.publicationYear = part.value
@@ -105,69 +111,81 @@ fun Route.bookRouting() {
                             val fileBytes = part.streamProvider().readBytes()
                             File("src/main/kotlin/com/example/book-covers/" + book.bookCover).writeBytes(fileBytes)
                             println("Imagen subida")
-                        } catch (e: FileNotFoundException){
+                        } catch (e: FileNotFoundException) {
                             println("Error " + e.message)
                         }
                     }
+
                     else -> {}
                 }
                 println("Subido ${part.name}")
             }
             println("Ahora posteamos")
-            // Si no hay ningún libro ya con ese id o ha sido borrado (el valor es nulo), lo añadimos a la booklist con esa ID
-            if (!bookList.containsKey(book.idBook) || bookList[book.idBook] == null) {
-                bookList[book.idBook] = book
-                call.respondText("Book stored correctly.", status = HttpStatusCode.Created)
-                return@post call.respond(book)
-            } else {
-                return@post call.respondText(
-                    "Book with id ${book.idBook} already exists.",
-                    status = HttpStatusCode.OK
-                )
+            // Si no hay ningún libro ya con ese id lo añadimos a la booklist con la próxima ID
+            val listOfBooksFromDB = Database().getAllBooks()
+            var nextID = (listOfBooksFromDB.size + 1)
+            var foundID = false
+            for (n in 1..nextID){
+                if (listOfBooksFromDB.none { it.idBook == n.toString() }){
+                    nextID = n
+                    foundID = true
+                    break
+                }
             }
+            if (!foundID){
+                while (listOfBooksFromDB.filter { it.idBook == nextID.toString() }.size == 1) {
+                    nextID++
+                }
+            }
+            book.idBook = nextID.toString()
+
+            Database().insertNewBook(book)
+
+            call.respondText("Book stored correctly.", status = HttpStatusCode.Created)
+            return@post call.respond(book)
         }
 
         // Put solo pueden hacerlo los administradores
         put("{id?}") {
-            if (call.parameters["id"].isNullOrBlank()) return@put call.respondText(
-                "Missing id.",
-                status = HttpStatusCode.BadRequest
-            )
             val id = call.parameters["id"]
+            if (id.isNullOrBlank()) return@put call.respondText(
+                "Missing id.", status = HttpStatusCode.BadRequest)
+
             val bookToUpdate = call.receive<Book>()
 
-            if (bookList.isNotEmpty()) {
-                if (bookList.containsKey(id)) {
-                    bookList[id!!] = bookToUpdate
+            val listOfBooksFromDB = Database().getAllBooks()
+            if (listOfBooksFromDB.isNotEmpty()) {
+                if (listOfBooksFromDB.filter { it.idBook == id }.size == 1) {
+                    Database().updateBook(id, bookToUpdate)
                     return@put call.respondText(
                         "Book with id $id has been updated.", status = HttpStatusCode.Accepted
                     )
                 } else return@put call.respondText(
-                    "Book with id $id not found.",
-                    status = HttpStatusCode.NotFound
+                    "Book with id $id not found.", status = HttpStatusCode.NotFound
                 )
             } else call.respondText("No books found.", status = HttpStatusCode.OK)
         }
-    }
-    //Delete solo pueden hacerlo los admins
-    delete("{id}") {
-        if (call.parameters["id"].isNullOrBlank()) return@delete call.respondText(
-            "Missing book id.",
-            status = HttpStatusCode.BadRequest
-        )
-        val id = call.parameters["id"]
-        if (bookList.isNotEmpty()) {
-            if (bookList.containsKey(id)) {
-                bookList[id!!] = null
-                return@delete call.respondText(
-                    "Book removed successfully.", status = HttpStatusCode.Accepted
-                )
-            } else return@delete call.respondText(
-                "Book with id $id not found.",
-                status = HttpStatusCode.NotFound
+        //Delete solo pueden hacerlo los admins
+        delete("{id?}") {
+            val id = call.parameters["id"]
+            if (id.isNullOrBlank()) return@delete call.respondText(
+                "Missing book id.",
+                status = HttpStatusCode.BadRequest
             )
-        } else {
-            call.respondText("No books found.", status = HttpStatusCode.NotFound)
+            val listOfBooksFromDB = Database().getAllBooks()
+            if (listOfBooksFromDB.isNotEmpty()) {
+                if (listOfBooksFromDB.filter { it.idBook == id }.size == 1) {
+                    Database().deleteBook(id)
+                    return@delete call.respondText(
+                        "Book removed successfully.", status = HttpStatusCode.Accepted
+                    )
+                } else return@delete call.respondText(
+                    "Book with id $id not found.",
+                    status = HttpStatusCode.NotFound
+                )
+            } else {
+                call.respondText("No books found.", status = HttpStatusCode.NotFound)
+            }
         }
     }
 }
