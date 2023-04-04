@@ -160,24 +160,7 @@ fun Route.userRouting() {
                 call.respondText("Email ${newUser.email} already exists in our database.",
                     status = HttpStatusCode.OK)
             } else{
-                var nextID = (userList.size + 1)
-                var foundID = false
-                // Recorre los ids hasta encontrar un número que no esté repetido, si lo encuentra sale del bucle,
-                // si no lo encuentra, el id será al tamaño de la lista de usuarios+1
-                // El for es para mantener un orden numérico y que no se complique cuando se eliminan usuarios
-                for (n in 1..nextID) {
-                    if (userList.none { it.idUser == n.toString() }) {
-                        nextID = n
-                        foundID = true
-                        break
-                    }
-                }
-                if (!foundID) {
-                    while (userList.filter { it.idUser == nextID.toString() }.size == 1) {
-                        nextID++
-                    }
-                }
-                newUser.idUser = nextID.toString()
+
                 Database().insertNewUser(newUser)
 
                 call.respondText("User stored correctly.", status = HttpStatusCode.Created)

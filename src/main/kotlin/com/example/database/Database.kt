@@ -108,18 +108,18 @@ class Database {
         try {
             val connection = connectToDB()
 
-            val bookSentence = "INSERT INTO books VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+            val bookSentence = "INSERT INTO books VALUES (DEFAULT, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
             val preparedBook: PreparedStatement = connection.prepareStatement(bookSentence)
-            preparedBook.setInt(1, newBook.idBook.toInt())
-            preparedBook.setString(2, newBook.title)
-            preparedBook.setString(3, newBook.author)
-            preparedBook.setString(4, newBook.publicationYear)
-            preparedBook.setString(5, newBook.synopsis)
-            preparedBook.setString(6, newBook.bookCover)
-            preparedBook.setBoolean(7, newBook.state)
-            preparedBook.setInt(8, newBook.stockTotal)
-            preparedBook.setInt(9, newBook.stockRemaining)
-            preparedBook.setString(10, newBook.genre)
+            //preparedBook.setInt(1, newBook.idBook.toInt())
+            preparedBook.setString(1, newBook.title)
+            preparedBook.setString(2, newBook.author)
+            preparedBook.setString(3, newBook.publicationYear)
+            preparedBook.setString(4, newBook.synopsis)
+            preparedBook.setString(5, newBook.bookCover)
+            preparedBook.setBoolean(6, newBook.state)
+            preparedBook.setInt(7, newBook.stockTotal)
+            preparedBook.setInt(8, newBook.stockRemaining)
+            preparedBook.setString(9, newBook.genre)
             preparedBook.executeUpdate()
             preparedBook.close()
 
@@ -247,24 +247,24 @@ class Database {
     fun insertNewUser(newUser: User) {
         try {
             val connection = connectToDB()
-            val userSentence = "INSERT INTO users VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
+            val userSentence = "INSERT INTO users VALUES (DEFAULT, ?, ?, ?, ?, ?, ?, ?, ?)"
             val preparedUser: PreparedStatement = connection.prepareStatement(userSentence)
-            preparedUser.setInt(1, newUser.idUser.toInt())
-            preparedUser.setString(2, newUser.name)
-            preparedUser.setString(3, newUser.email)
-            preparedUser.setString(4, newUser.password)
+           // preparedUser.setInt(1, newUser.idUser.toInt())
+            preparedUser.setString(1, newUser.name)
+            preparedUser.setString(2, newUser.email)
+            preparedUser.setString(3, newUser.password)
             preparedUser.setString(
-                5, when (newUser.userType) {
+                4, when (newUser.userType) {
                     UserType.ADMIN -> "ADMIN"
                     else -> "NORMAL"
                 }
             )
-            preparedUser.setInt(6, newUser.borrowedBooksCounter)
+            preparedUser.setInt(5, newUser.borrowedBooksCounter)
             //Al crear usuario la lista de leídos está vacía
             val booksRead = connection.createArrayOf("INT", newUser.bookHistory.toTypedArray())
-            preparedUser.setArray(7, booksRead)
-            preparedUser.setBoolean(8, newUser.banned)
-            preparedUser.setString(9, newUser.userImage)
+            preparedUser.setArray(6, booksRead)
+            preparedUser.setBoolean(7, newUser.banned)
+            preparedUser.setString(8, newUser.userImage)
             preparedUser.executeUpdate()
             preparedUser.close()
 
@@ -466,14 +466,14 @@ class Database {
     fun insertNewReview(newReview: Review) {
         try {
             val connection = connectToDB()
-            val reviewSentence = "INSERT INTO reviews VALUES (?, ?, ?, ?, ?, ?)"
+            val reviewSentence = "INSERT INTO reviews VALUES (DEFAULT, ?, ?, ?, ?, ?)"
             val preparedReview: PreparedStatement = connection.prepareStatement(reviewSentence)
-            preparedReview.setInt(1, newReview.idReview.toInt())
-            preparedReview.setInt(2, newReview.idBook.toInt())
-            preparedReview.setInt(3, newReview.idUser.toInt())
-            preparedReview.setString(4, newReview.date)
-            preparedReview.setString(5, newReview.comment)
-            preparedReview.setInt(6, newReview.rating)
+            //preparedReview.setInt(1, newReview.idReview.toInt())
+            preparedReview.setInt(1, newReview.idBook.toInt())
+            preparedReview.setInt(2, newReview.idUser.toInt())
+            preparedReview.setString(3, newReview.date)
+            preparedReview.setString(4, newReview.comment)
+            preparedReview.setInt(5, newReview.rating)
             preparedReview.executeUpdate()
             preparedReview.close()
             connection.close()

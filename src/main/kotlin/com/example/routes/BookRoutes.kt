@@ -119,23 +119,7 @@ fun Route.bookRouting() {
                     else -> {}
                 }
             }
-            // Si no hay ningún libro ya con ese id lo añadimos a la booklist con la próxima ID
-            val listOfBooksFromDB = Database().getAllBooks()
-            var nextID = (listOfBooksFromDB.size + 1)
-            var foundID = false
-            for (n in 1..nextID){
-                if (listOfBooksFromDB.none { it.idBook == n.toString() }){
-                    nextID = n
-                    foundID = true
-                    break
-                }
-            }
-            if (!foundID){
-                while (listOfBooksFromDB.filter { it.idBook == nextID.toString() }.size == 1) {
-                    nextID++
-                }
-            }
-            book.idBook = nextID.toString()
+
 
             Database().insertNewBook(book)
 

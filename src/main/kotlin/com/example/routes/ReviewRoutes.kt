@@ -65,28 +65,9 @@ fun Route.reviewRouting() {
         post {
             val bookID = call.parameters["bookid"]
             val reviewCall = call.receive<Review>()
-            // Filtramos lista de reviews por ID de libro y filtramos de nuevo por ID de review
-
-            // Si está vacía la añadimos
+            // Filtramos lista de libros por ID de libro (Cambiar a llamar al libro?)
             val listOfBooksFromDB = Database().getAllBooks()
             if (listOfBooksFromDB.filter { it.idBook == bookID }.size == 1) {
-                val bookReviews = Database().getAllReviewsOfBook(bookID!!)
-                var nextID = (bookReviews.size + 1)
-                var foundID = false
-                for (n in 1..nextID) {
-                    if (bookReviews.none { it.idReview == n.toString() }) {
-                        nextID = n
-                        foundID = true
-                        break
-                    }
-                }
-                if (!foundID) {
-                    while (bookReviews.filter { it.idReview == nextID.toString() }.size == 1) {
-                        nextID++
-                    }
-                }
-                reviewCall.idReview = nextID.toString()
-                println("ID REVIEW = ${reviewCall.idReview}")
                 Database().insertNewReview(reviewCall)
                 call.respondText("Review stored correctly.", status = HttpStatusCode.Created)
                 return@post call.respond(reviewCall)
