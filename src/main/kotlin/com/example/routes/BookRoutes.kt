@@ -118,9 +118,7 @@ fun Route.bookRouting() {
 
                     else -> {}
                 }
-                println("Subido ${part.name}")
             }
-            println("Ahora posteamos")
             // Si no hay ningún libro ya con ese id lo añadimos a la booklist con la próxima ID
             val listOfBooksFromDB = Database().getAllBooks()
             var nextID = (listOfBooksFromDB.size + 1)
@@ -151,12 +149,54 @@ fun Route.bookRouting() {
             if (id.isNullOrBlank()) return@put call.respondText(
                 "Missing id.", status = HttpStatusCode.BadRequest)
 
-            val bookToUpdate = call.receive<Book>()
+
+            val bookData = call.receiveMultipart()
+            val book = Book("", "", "", "", "", "", true,
+                0, 0, "")
+
+            // Separem el tractament de les dades entre: dades primitives i fitxers
+            bookData.forEachPart { part ->
+                when (part) {
+                    is PartData.FormItem -> {
+                        when (part.name) {
+                            // "idBook" -> book.idBook = part.value
+                            "title" -> book.title = part.value
+                            "author" -> book.author = part.value
+                            "publicationYear" -> book.publicationYear = part.value
+                            "synopsis" -> book.synopsis = part.value
+                            "state" -> book.state = part.value.toBoolean()
+                            "stockTotal" -> book.stockTotal = part.value.toInt()
+                            "stockRemaining" -> book.stockRemaining = part.value.toInt()
+                            "genre" -> book.genre = part.value
+
+                        }
+                    }
+                    // Aquí recollim els fitxers
+                    is PartData.FileItem -> {
+                        try {
+                            book.bookCover = part.originalFileName as String
+                            // Si cambia la imagen, borramos la ruta anterior y guardamos la nueva
+                            if (book.bookCover != Database().getBookByID(id).bookCover){
+                                File("src/main/kotlin/com/example/book-covers/" +Database().getBookByID(id).bookCover).delete()
+                                val fileBytes = part.streamProvider().readBytes()
+                                File("src/main/kotlin/com/example/book-covers/" + book.bookCover).writeBytes(fileBytes)
+                                println("Imagen subida")
+                            }
+
+                        } catch (e: FileNotFoundException) {
+                            println("Error " + e.message)
+                        }
+                    }
+
+                    else -> {}
+                }
+                println("Subido ${part.name}")
+            }
 
             val listOfBooksFromDB = Database().getAllBooks()
             if (listOfBooksFromDB.isNotEmpty()) {
                 if (listOfBooksFromDB.filter { it.idBook == id }.size == 1) {
-                    Database().updateBook(id, bookToUpdate)
+                    Database().updateBook(id, book)
                     return@put call.respondText(
                         "Book with id $id has been updated.", status = HttpStatusCode.Accepted
                     )

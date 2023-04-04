@@ -225,8 +225,56 @@ fun Route.userRouting() {
             if (id.isNullOrBlank()) return@put call.respondText(
                 "Missing id", status = HttpStatusCode.BadRequest
             )
+            val userData = call.receiveMultipart()
+            val userToUpdate = User(
+                "", "", "", "", UserType.NORMAL,
+                0, mutableSetOf<Int>(), false, ""
+            )
+            // Separem el tractament de les dades entre: dades primitives i fitxers
+            userData.forEachPart { part ->
+                when (part) {
+                    // No recogemos la lista de libros leídos porque empieza con 0
+                    is PartData.FormItem -> {
+                        when (part.name) {
+                            //"idUser" -> newUser.idUser = part.value
+                            "name" -> userToUpdate.name = part.value
+                            "email" -> userToUpdate.email = part.value
+                            "password" -> userToUpdate.password = part.value
+                            "userType" -> when (part.value){
+                                "ADMIN" -> userToUpdate.userType = UserType.ADMIN
 
-            val userToUpdate = call.receive<User>()
+                                else -> userToUpdate.userType = UserType.NORMAL
+                            }
+                            "borrowedBooksCounter" -> userToUpdate.borrowedBooksCounter = part.value.toInt()
+                            "banned" -> userToUpdate.banned = part.value.toBoolean()
+                        }
+                    }
+
+
+                    // Aquí recollim els fitxers
+                    // Habrá que hacer en el android que este campo sea una imagen placeholder
+                    // o no guardarla hasta que la cambie
+                    is PartData.FileItem -> {
+                        try {
+                            userToUpdate.userImage = part.originalFileName as String
+                            if (userToUpdate.userImage != Database().getUserByID(id).userImage){
+                                File("src/main/kotlin/com/example/user-images/" +Database().getUserByID(id).userImage).delete()
+                            val fileBytes = part.streamProvider().readBytes()
+                            File("src/main/kotlin/com/example/user-images/" + userToUpdate.userImage).writeBytes(fileBytes)
+                            println("Imagen subida")
+                            }
+                        } catch (e: FileNotFoundException) {
+                            println("Error " + e.message)
+                        }
+                    }
+
+                    else -> {}
+                }
+
+                println("Subido ${part.name}")
+            }
+            userToUpdate.bookHistory = Database().getBookHistoryFromUser(id)
+
             val userList = Database().getAllUsers()
             if (userList.isNotEmpty()) {
                 if (userList.filter { it.idUser == id }.size == 1) {
