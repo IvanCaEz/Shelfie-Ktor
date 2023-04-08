@@ -10,8 +10,7 @@ data class User(
     var password: String,
     var userType: UserType,
     var borrowedBooksCounter: Int,
-    var bookHistory: MutableSet<Int>, // <- Cambiar a set de Ints
+    var bookHistory: Set<Int>, // <- Cambiar a set de Ints
     var banned: Boolean,
     var userImage:  String
 )
-val userList = mutableMapOf<String, User?>()

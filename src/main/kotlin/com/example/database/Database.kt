@@ -179,7 +179,7 @@ class Database {
     fun getUserByID(userID: String): User {
         var user = User(
             "", "", "", "", UserType.NORMAL,
-            0, mutableSetOf<Int>(), false, ""
+            0, setOf<Int>(), false, ""
         )
         try {
             val connection = connectToDB()
@@ -276,6 +276,87 @@ class Database {
         }
     }
 
+    fun getUserLoans(userID: String): List<BookLoan> {
+        val bookLoans = mutableListOf<BookLoan>()
+        try {
+            val connection = connectToDB()
+            val statement = connection.createStatement()
+            val loanSelect = "SELECT * FROM book_loans WHERE id_user = $userID"
+            val result = statement.executeQuery(loanSelect)
+
+            while (result.next()) {
+
+                val bookLoan = getLoanFromResult(result)
+
+                bookLoans.add(bookLoan)
+            }
+            statement.close()
+            connection.close()
+            println("Disconnected from database")
+
+        } catch (e: SQLException) {
+            println("Error " + e.errorCode + ": " + e.message)
+        }
+        return bookLoans.toList()
+    }
+
+    fun getLoanByBookID(userID: String, bookID: String): BookLoan {
+        var bookLoan = BookLoan("", "", "", "")
+        try {
+            val connection = connectToDB()
+
+            val statement = connection.createStatement()
+            val loanSelect = "SELECT * FROM book_loans WHERE id_user = $userID AND id_book = $bookID"
+            val result = statement.executeQuery(loanSelect)
+
+            while (result.next()) {
+                bookLoan = getLoanFromResult(result)
+            }
+            statement.close()
+            connection.close()
+            println("Disconnected from database")
+
+        } catch (e: SQLException) {
+            println("Error " + e.errorCode + ": " + e.message)
+        }
+        return bookLoan
+    }
+
+    fun addBookLoan(newBookLoan: BookLoan) {
+        try {
+            val connection = connectToDB()
+            val loanSentence = "INSERT INTO book_loans VALUES (?, ?, ?, ?)"
+            val preparedLoan: PreparedStatement = connection.prepareStatement(loanSentence)
+            preparedLoan.setInt(1, newBookLoan.idUser.toInt())
+            preparedLoan.setInt(2, newBookLoan.idBook.toInt())
+            preparedLoan.setString(3, newBookLoan.startDate)
+            preparedLoan.setString(4, newBookLoan.endDate)
+            preparedLoan.executeUpdate()
+            preparedLoan.close()
+
+            connection.close()
+            println("Disconnected from database")
+
+        } catch (e: SQLException) {
+            println("Error " + e.errorCode + ": " + e.message)
+        }
+    }
+
+    fun deleteBookLoan(userID: String, bookID: String) {
+        try {
+            val connection = connectToDB()
+            val statement = connection.createStatement()
+            val removeLoan = "DELETE FROM book_loans WHERE id_user = $userID AND id_book = $bookID"
+            statement.executeUpdate(removeLoan)
+            statement.close()
+            connection.close()
+            println("Disconnected from database")
+
+        } catch (e: SQLException) {
+            println("Error " + e.errorCode + ": " + e.message)
+        }
+    }
+
     fun addBookRead(userID: String, bookID: String) {
         try {
             val connection = connectToDB()
@@ -309,8 +390,9 @@ class Database {
         }
     }
 
-    fun getBookHistoryFromUser(userID: String): MutableSet<Int> {
-        var history = mutableSetOf<Int>()
+
+    fun getBookHistoryFromUser(userID: String): Set<Int> {
+        var history = setOf<Int>()
         try {
             val connection = connectToDB()
 
@@ -320,7 +402,7 @@ class Database {
 
             while (result.next()) {
                 history = (result.getArray("book_history").array as Array<Int>)
-                    .map { it }.toMutableSet()
+                    .map { it }.toSet()
             }
             statement.close()
             connection.close()
@@ -367,7 +449,7 @@ class Database {
                 else -> UserType.NORMAL
             },
             result.getInt("borrowed_books_counter"),
-            history.map { it }.toMutableSet(),
+            history.map { it }.toSet(),
             result.getBoolean("banned"),
             result.getString("user_image")
         )
@@ -385,6 +467,19 @@ class Database {
             result.getString("date"),
             result.getString("review"),
             result.getInt("rating")
+        )
+    }
+
+    /**
+     * Esta función transforma el resultado de la query de la base de datos en un préstamo.
+     * @param result El resultado de la query con toda la info del préstamo
+     */
+    private fun getLoanFromResult(result: ResultSet): BookLoan {
+        return BookLoan(
+            result.getString("id_user"),
+            result.getString("id_book"),
+            result.getString("start_date"),
+            result.getString("end_date")
         )
     }
 

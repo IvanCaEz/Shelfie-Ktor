@@ -2,7 +2,6 @@ package com.example.routes
 
 import com.example.database.Database
 import com.example.models.Review
-import com.example.models.bookList
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*

@@ -57,11 +57,69 @@ fun Route.userRouting() {
                 if (userList.filter { it.idUser == id }.size == 1) {
                     println("User encontrado")
                     // No sé por qué no se añade el historial en la otra función así que aquí se lo añadimos
-                   userList[0].bookHistory = Database().getBookHistoryFromUser(id)
+                    userList[0].bookHistory = Database().getBookHistoryFromUser(id)
                     if (userList[0].bookHistory.isNotEmpty()) {
-                        return@get call.respond(userList[0].bookHistory)
+                        // Por cada ID de libro que tiene el bookHistory, obtenemos los datos del libro y retornamos
+                        // la lista
+                        val historyList = mutableListOf<Book>()
+                        userList[0].bookHistory.forEach { bookID ->
+                            historyList.add(Database().getBookByID(bookID.toString()))
+                        }
+                        return@get call.respond(historyList)
                     } else {
                         return@get call.respondText("User with id $id hasn't read any books yet.")
+                    }
+                } else call.respondText("User with id $id not found.", status = HttpStatusCode.NotFound)
+            } else call.respondText("No users found.", status = HttpStatusCode.OK)
+        }
+
+        /**
+         * GET préstamos de libros del usuario
+         * Miramos si tenemos un usuario con ese ID en la base de datos
+         * Si el número de libros prestados no es 0, devolvemos la lista de libros prestados (3 máximo)
+         */
+        get("{id?}/book_loans") {
+            val id = call.parameters["id"]
+            if (id.isNullOrBlank()) return@get call.respondText(
+                "Missing user id.", status = HttpStatusCode.BadRequest
+            )
+            val userList = Database().getAllUsers()
+            if (userList.isNotEmpty()) {
+                if (userList.filter { it.idUser == id }.size == 1) {
+                    println("User encontrado")
+                    // No sé por qué no se añade el historial en la otra función así que aquí se lo añadimos
+                    val userLoans = Database().getUserLoans(id)
+                    if (userLoans.isNotEmpty()) {
+                        return@get call.respond(userLoans)
+                    } else {
+                        return@get call.respondText("User with id $id has no active loans.")
+                    }
+                } else call.respondText("User with id $id not found.", status = HttpStatusCode.NotFound)
+            } else call.respondText("No users found.", status = HttpStatusCode.OK)
+        }
+        /**
+         * GET préstamos de libros específico
+         * Miramos si tenemos un usuario con ese ID en la base de datos
+         * Si el número de libros prestados no es 0, devolvemos la lista de libros prestados (3 máximo)
+         */
+        get("{id?}/book_loans/{bookID}") {
+            val id = call.parameters["id"]
+            val bookID = call.parameters["bookID"]
+            if (id.isNullOrBlank()) return@get call.respondText(
+                "Missing user id.", status = HttpStatusCode.BadRequest
+            )
+            val userList = Database().getAllUsers()
+            if (userList.isNotEmpty()) {
+                if (userList.filter { it.idUser == id }.size == 1) {
+                    println("User encontrado")
+                    // Obtenemos los préstamos del usuario
+                    val userLoans = Database().getUserLoans(id)
+                    // Miramos que tenga ese libro prestado y lo devolvemos
+                    if (userLoans.filter { it.idBook == bookID }.size == 1) {
+                        val bookLoan = Database().getLoanByBookID(id, bookID!!)
+                        return@get call.respond(bookLoan)
+                    } else {
+                        return@get call.respondText("Book with id $bookID was not been loaned.")
                     }
                 } else call.respondText("User with id $id not found.", status = HttpStatusCode.NotFound)
             } else call.respondText("No users found.", status = HttpStatusCode.OK)
@@ -109,7 +167,7 @@ fun Route.userRouting() {
             val userData = call.receiveMultipart()
             val newUser = User(
                 "", "", "", "", UserType.NORMAL,
-                0, mutableSetOf<Int>(), false, ""
+                0, setOf<Int>(), false, ""
             )
             // Separem el tractament de les dades entre: dades primitives i fitxers
             userData.forEachPart { part ->
@@ -121,11 +179,12 @@ fun Route.userRouting() {
                             "name" -> newUser.name = part.value
                             "email" -> newUser.email = part.value
                             "password" -> newUser.password = part.value
-                            "userType" -> when (part.value){
+                            "userType" -> when (part.value) {
                                 "ADMIN" -> newUser.userType = UserType.ADMIN
 
                                 else -> newUser.userType = UserType.NORMAL
                             }
+
                             "borrowedBooksCounter" -> newUser.borrowedBooksCounter = part.value.toInt()
                             "banned" -> newUser.banned = part.value.toBoolean()
                         }
@@ -156,10 +215,12 @@ fun Route.userRouting() {
             println("Ahora posteamos")
             // Si no hay ningún usuario ya con ese mail, lo añadimos a la base de datos con esa ID
             val userList = Database().getAllUsers()
-            if (userList.any { it.email == newUser.email }){
-                call.respondText("Email ${newUser.email} already exists in our database.",
-                    status = HttpStatusCode.OK)
-            } else{
+            if (userList.any { it.email == newUser.email }) {
+                call.respondText(
+                    "Email ${newUser.email} already exists in our database.",
+                    status = HttpStatusCode.OK
+                )
+            } else {
 
                 Database().insertNewUser(newUser)
 
@@ -168,136 +229,169 @@ fun Route.userRouting() {
             }
         }
 
-        // POST Libro a historial del user
 
-        post("{userid?}/book_history") {
-            val book = call.receive<Book>()
+        // POST Préstamo al user
+
+        post("{userid?}/book_loans") {
+            val bookLoan = call.receive<BookLoan>()
             val userID = call.parameters["userid"]
             if (userID.isNullOrBlank()) return@post call.respondText(
                 "Missing user id.", status = HttpStatusCode.BadRequest
             )
-            val userList = Database().getAllUsers()
-            if (userList.isNotEmpty()) {
-                if (userList.filter { it.idUser == userID }.size == 1) {
-                    // Si el historial de libros leídos no tiene el id del libro, lo añadimos
-                    // No sé por qué no se añade el historial en la otra función así que aquí se lo añadimos
-                    userList[0].bookHistory = Database().getBookHistoryFromUser(userID)
-                    if (!userList[0].bookHistory.contains(book.idBook.toInt())) {
-                        // Lo añadimos
-                        Database().addBookRead(userID, book.idBook)
+            val userLoans = Database().getUserLoans(userID)
+            // Si tiene menos de 3 préstamos puede pedir prestado otro
+            if (userLoans.size < 3) {
+                // Si el libro que quiere pedir prestado no lo ha pedido ya prestado
+                if (userLoans.none { it.idBook == bookLoan.idBook }) {
+                    // Lo añadimos
+                    Database().addBookLoan(bookLoan)
 
-                        call.respondText(
-                            "Book with id ${book.idBook} added to book history of user with id $userID correctly.",
-                            status = HttpStatusCode.Created
-                        )
-                        return@post call.respond(book)
-                        // Si ya existe
-                    } else return@post call.respondText(
-                        "Book with id ${book.idBook} already exists.",
-                        status = HttpStatusCode.OK
-                    )
-                    // Si no existe ese usuario en nuestro mapa
-                } else call.respondText("User with id $userID not found.", status = HttpStatusCode.NotFound)
-            } else return@post call.respondText("No users found.", status = HttpStatusCode.OK)
-        }
-
-        // PUT
-
-        put("{id?}") {
-            val id = call.parameters["id"]
-            if (id.isNullOrBlank()) return@put call.respondText(
-                "Missing id", status = HttpStatusCode.BadRequest
-            )
-            val userData = call.receiveMultipart()
-            val userToUpdate = User(
-                "", "", "", "", UserType.NORMAL,
-                0, mutableSetOf<Int>(), false, ""
-            )
-            // Separem el tractament de les dades entre: dades primitives i fitxers
-            userData.forEachPart { part ->
-                when (part) {
-                    // No recogemos la lista de libros leídos porque empieza con 0
-                    is PartData.FormItem -> {
-                        when (part.name) {
-                            //"idUser" -> newUser.idUser = part.value
-                            "name" -> userToUpdate.name = part.value
-                            "email" -> userToUpdate.email = part.value
-                            "password" -> userToUpdate.password = part.value
-                            "userType" -> when (part.value){
-                                "ADMIN" -> userToUpdate.userType = UserType.ADMIN
-
-                                else -> userToUpdate.userType = UserType.NORMAL
-                            }
-                            "borrowedBooksCounter" -> userToUpdate.borrowedBooksCounter = part.value.toInt()
-                            "banned" -> userToUpdate.banned = part.value.toBoolean()
-                        }
-                    }
-
-
-                    // Aquí recollim els fitxers
-                    // Habrá que hacer en el android que este campo sea una imagen placeholder
-                    // o no guardarla hasta que la cambie
-                    is PartData.FileItem -> {
-                        try {
-                            userToUpdate.userImage = part.originalFileName as String
-                            if (userToUpdate.userImage != Database().getUserByID(id).userImage){
-                                File("src/main/kotlin/com/example/user-images/" +Database().getUserByID(id).userImage).delete()
-                            val fileBytes = part.streamProvider().readBytes()
-                            File("src/main/kotlin/com/example/user-images/" + userToUpdate.userImage).writeBytes(fileBytes)
-                            println("Imagen subida")
-                            }
-                        } catch (e: FileNotFoundException) {
-                            println("Error " + e.message)
-                        }
-                    }
-
-                    else -> {}
-                }
-
-                println("Subido ${part.name}")
-            }
-            userToUpdate.bookHistory = Database().getBookHistoryFromUser(id)
-
-            val userList = Database().getAllUsers()
-            if (userList.isNotEmpty()) {
-                if (userList.filter { it.idUser == id }.size == 1) {
-                    Database().updateUser(id, userToUpdate)
-                    return@put call.respondText(
-                        "User with id $id has been updated.", status = HttpStatusCode.Accepted
-                    )
-                } else call.respondText("User with id $id not found.", status = HttpStatusCode.NotFound)
-
-            } else call.respondText("No users found.", status = HttpStatusCode.NotFound)
-        }
-
-        //DELETE (solo los admins)
-
-        delete("{id}") {
-            val id = call.parameters["id"]
-            if (call.parameters["id"].isNullOrBlank()) return@delete call.respondText(
-                "Missing user id",
-                status = HttpStatusCode.BadRequest
-            )
-            val userList = Database().getAllUsers()
-            if (userList.isNotEmpty()) {
-                if (userList.filter { it.idUser == id }.size == 1) {
-                    // Primero quitamos las reviews y luego al usuario
-                    Database().deleteReviewsFromUser(id!!)
-                    Database().deleteUser(id)
-                    return@delete call.respondText(
-                        "User removed successfully.", status = HttpStatusCode.Accepted
-                    )
-                } else {
                     call.respondText(
-                        "User with id $id not found.", status = HttpStatusCode.NotFound
+                        "User with id $userID has borrowed book with id ${bookLoan.idBook} until ${bookLoan.endDate}.",
+                        status = HttpStatusCode.Created
                     )
+                    return@post call.respond(bookLoan)
+                    // Si ya existe
+                } else return@post call.respondText(
+                    "This user has already this book on loan.",
+                    status = HttpStatusCode.OK
+                )
+                // Si no existe ese usuario en nuestro mapa
+        } else return@post call.respondText("User with id $userID has 3 active loans.", status = HttpStatusCode.OK)
+    }
+
+    // POST Libro a historial del user
+
+    post("{userid?}/book_history") {
+        val book = call.receive<Book>()
+        val userID = call.parameters["userid"]
+        if (userID.isNullOrBlank()) return@post call.respondText(
+            "Missing user id.", status = HttpStatusCode.BadRequest
+        )
+        val userList = Database().getAllUsers()
+        if (userList.isNotEmpty()) {
+            if (userList.filter { it.idUser == userID }.size == 1) {
+                // Si el historial de libros leídos no tiene el id del libro, lo añadimos
+                // No sé por qué no se añade el historial en la otra función así que aquí se lo añadimos
+                userList[0].bookHistory = Database().getBookHistoryFromUser(userID)
+                if (!userList[0].bookHistory.contains(book.idBook.toInt())) {
+                    // Lo añadimos
+                    Database().addBookRead(userID, book.idBook)
+
+                    call.respondText(
+                        "Book with id ${book.idBook} added to book history of user with id $userID correctly.",
+                        status = HttpStatusCode.Created
+                    )
+                    return@post call.respond(book)
+                    // Si ya existe
+                } else return@post call.respondText(
+                    "Book with id ${book.idBook} already exists.",
+                    status = HttpStatusCode.OK
+                )
+                // Si no existe ese usuario en nuestro mapa
+            } else call.respondText("User with id $userID not found.", status = HttpStatusCode.NotFound)
+        } else return@post call.respondText("No users found.", status = HttpStatusCode.OK)
+    }
+
+    // PUT
+
+    put("{id?}") {
+        val id = call.parameters["id"]
+        if (id.isNullOrBlank()) return@put call.respondText(
+            "Missing id", status = HttpStatusCode.BadRequest
+        )
+        val userData = call.receiveMultipart()
+        val userToUpdate = User(
+            "", "", "", "", UserType.NORMAL,
+            0, setOf<Int>(), false, ""
+        )
+        // Separem el tractament de les dades entre: dades primitives i fitxers
+        userData.forEachPart { part ->
+            when (part) {
+                // No recogemos la lista de libros leídos porque empieza con 0
+                is PartData.FormItem -> {
+                    when (part.name) {
+                        //"idUser" -> newUser.idUser = part.value
+                        "name" -> userToUpdate.name = part.value
+                        "email" -> userToUpdate.email = part.value
+                        "password" -> userToUpdate.password = part.value
+                        "userType" -> when (part.value) {
+                            "ADMIN" -> userToUpdate.userType = UserType.ADMIN
+
+                            else -> userToUpdate.userType = UserType.NORMAL
+                        }
+
+                       // "borrowedBooksCounter" -> userToUpdate.borrowedBooksCounter = part.value.toInt()
+                        "banned" -> userToUpdate.banned = part.value.toBoolean()
+                    }
                 }
+
+
+                // Aquí recollim els fitxers
+                // Habrá que hacer en el android que este campo sea una imagen placeholder
+                // o no guardarla hasta que la cambie
+                is PartData.FileItem -> {
+                    try {
+                        userToUpdate.userImage = part.originalFileName as String
+                        if (userToUpdate.userImage != Database().getUserByID(id).userImage) {
+                            File("src/main/kotlin/com/example/user-images/" + Database().getUserByID(id).userImage).delete()
+                            val fileBytes = part.streamProvider().readBytes()
+                            File("src/main/kotlin/com/example/user-images/" + userToUpdate.userImage).writeBytes(
+                                fileBytes
+                            )
+                            println("Imagen subida")
+                        }
+                    } catch (e: FileNotFoundException) {
+                        println("Error " + e.message)
+                    }
+                }
+
+                else -> {}
+            }
+
+            println("Subido ${part.name}")
+        }
+        userToUpdate.bookHistory = Database().getBookHistoryFromUser(id)
+        userToUpdate.borrowedBooksCounter = Database().getUserLoans(id).size
+        val userList = Database().getAllUsers()
+        if (userList.isNotEmpty()) {
+            if (userList.filter { it.idUser == id }.size == 1) {
+                Database().updateUser(id, userToUpdate)
+                return@put call.respondText(
+                    "User with id $id has been updated.", status = HttpStatusCode.Accepted
+                )
+            } else call.respondText("User with id $id not found.", status = HttpStatusCode.NotFound)
+
+        } else call.respondText("No users found.", status = HttpStatusCode.NotFound)
+    }
+
+    //DELETE (solo los admins)
+
+    delete("{id}") {
+        val id = call.parameters["id"]
+        if (call.parameters["id"].isNullOrBlank()) return@delete call.respondText(
+            "Missing user id",
+            status = HttpStatusCode.BadRequest
+        )
+        val userList = Database().getAllUsers()
+        if (userList.isNotEmpty()) {
+            if (userList.filter { it.idUser == id }.size == 1) {
+                // Primero quitamos las reviews y luego al usuario
+                Database().deleteReviewsFromUser(id!!)
+                Database().deleteUser(id)
+                return@delete call.respondText(
+                    "User removed successfully.", status = HttpStatusCode.Accepted
+                )
+            } else {
+                call.respondText(
+                    "User with id $id not found.", status = HttpStatusCode.NotFound
+                )
             }
         }
+    }
 
-
-        // DELETE libro leído (los usuarios normales también pueden)
-        delete("{userid?}/book_history/{bookid?}") {
+        // DELETE libro prestado
+        delete("{userid?}/book_loans/{bookid?}") {
             val userID = call.parameters["userid"]
             if (userID.isNullOrBlank()) return@delete call.respondText(
                 "Missing user id", status = HttpStatusCode.BadRequest
@@ -307,22 +401,47 @@ fun Route.userRouting() {
             val userList = Database().getAllUsers()
             if (userList.isNotEmpty()) {
                 if (userList.filter { it.idUser == userID }.size == 1) {
-                    // Si el historial de libros leídos  tiene el id del libro
-                    // No sé por qué no se añade el historial en la otra función así que aquí se lo añadimos
-                    userList[0].bookHistory = Database().getBookHistoryFromUser(userID)
-                    if (userList[0].bookHistory.contains(bookID!!.toInt())) {
+                    val bookLoans = Database().getUserLoans(userID)
+                    if (bookLoans.filter { it.idBook == bookID }.size == 1) {
                         // Lo quitamos
-                        println("HOli")
-                        Database().deleteBookRead(userID, bookID)
+                        Database().deleteBookLoan(userID, bookID!!)
                         return@delete call.respondText(
-                            "Book with id $bookID removed successfully from user history.",
+                            "Book with id $bookID has been returned.",
                             status = HttpStatusCode.Accepted
                         )
-                    } else call.respondText("Book with id $bookID not found in user's history.", status = HttpStatusCode.OK)
+                    } else call.respondText("Book with id $bookID not found in user's loaned books.", status = HttpStatusCode.OK)
                 } else call.respondText("No users found.", status = HttpStatusCode.OK)
             }
         }
+
+
+    // DELETE libro leído (los usuarios normales también pueden)
+    delete("{userid?}/book_history/{bookid?}") {
+        val userID = call.parameters["userid"]
+        if (userID.isNullOrBlank()) return@delete call.respondText(
+            "Missing user id", status = HttpStatusCode.BadRequest
+        )
+
+        val bookID = call.parameters["bookid"]
+        val userList = Database().getAllUsers()
+        if (userList.isNotEmpty()) {
+            if (userList.filter { it.idUser == userID }.size == 1) {
+                // Si el historial de libros leídos tiene el id del libro
+                // No sé por qué no se añade el historial en la otra función así que aquí se lo añadimos
+                userList[0].bookHistory = Database().getBookHistoryFromUser(userID)
+                if (userList[0].bookHistory.contains(bookID!!.toInt())) {
+                    // Lo quitamos
+                    println("HOli")
+                    Database().deleteBookRead(userID, bookID)
+                    return@delete call.respondText(
+                        "Book with id $bookID removed successfully from user history.",
+                        status = HttpStatusCode.Accepted
+                    )
+                } else call.respondText("Book with id $bookID not found in user's history.", status = HttpStatusCode.OK)
+            } else call.respondText("No users found.", status = HttpStatusCode.OK)
+        }
     }
+}
 }
 
 
