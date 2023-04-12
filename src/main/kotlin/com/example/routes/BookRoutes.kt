@@ -30,9 +30,9 @@ fun Route.bookRouting() {
 
             val listOfBooksFromDB = Database().getAllBooks()
             if (listOfBooksFromDB.isNotEmpty()) {
-                if (listOfBooksFromDB.filter { it.idBook == id }.size == 1) {
+                val bookWeWant = listOfBooksFromDB.filter { it.idBook == id }
+                if (bookWeWant.size == 1) {
                     return@get call.respond(Database().getBookByID(id))
-                    //return@get call.respond(bookList[id]!!)
                 } else call.respondText("Book with id $id not found.", status = HttpStatusCode.NotFound)
             } else call.respondText("No books found.", status = HttpStatusCode.OK)
         }
@@ -65,8 +65,9 @@ fun Route.bookRouting() {
 
             val listOfBooksFromDB = Database().getAllBooks()
             if (listOfBooksFromDB.isNotEmpty()) {
-                if (listOfBooksFromDB.filter { it.idBook == id }.size == 1) {
-                    file = File("src/main/kotlin/com/example/book-covers/" + listOfBooksFromDB[0].bookCover)
+                val bookWeWant = listOfBooksFromDB.filter { it.idBook == id }
+                if (bookWeWant.size == 1) {
+                    file = File("src/main/kotlin/com/example/book-covers/" + bookWeWant[0].bookCover)
                 } else {
                     call.respondText("No book found with id $id.", status = HttpStatusCode.NotFound)
                 }
@@ -107,7 +108,6 @@ fun Route.bookRouting() {
                     is PartData.FileItem -> {
                         try {
                             book.bookCover = part.originalFileName as String
-
                             val fileBytes = part.streamProvider().readBytes()
                             File("src/main/kotlin/com/example/book-covers/" + book.bookCover).writeBytes(fileBytes)
                             println("Imagen subida")
