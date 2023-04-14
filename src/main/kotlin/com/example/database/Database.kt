@@ -10,21 +10,22 @@ import java.sql.SQLException
 import kotlin.reflect.jvm.internal.impl.load.java.structure.JavaArrayType
 
 class Database {
-    fun connectToDB(): Connection {
-        lateinit var connection: Connection
+    private var connection: Connection? = null
+    fun connectToDB() {
         try {
             val user = "postgres"
             val password = "Program101010Ivan"
             val jdbcUrl = "jdbc:postgresql://localhost:5432/shelfie"
-            connection = DriverManager.getConnection(jdbcUrl, user, password)
-
-            println("Connection to the database: ${connection.isValid(0)}")
+            if (connection == null) connection = DriverManager.getConnection(jdbcUrl, user, password)
 
         } catch (e: SQLException) {
             println("Error: " + e.errorCode + e.message)
         }
-        return connection
 
+
+    }
+    init {
+        connectToDB()
     }
 
 
@@ -33,8 +34,7 @@ class Database {
         val bookList = mutableListOf<Book>()
 
         try {
-            val connection = connectToDB()
-            val statement = connection.createStatement()
+            val statement = connection!!.createStatement()
             val booksSelect = "SELECT * FROM books"
             val result = statement.executeQuery(booksSelect)
 
@@ -43,8 +43,6 @@ class Database {
                 bookList.add(book)
             }
             statement.close()
-            connection.close()
-            println("Disconnected from database")
 
         } catch (e: SQLException) {
             println("Error " + e.errorCode + ": " + e.message)
@@ -59,8 +57,7 @@ class Database {
             0, 0, ""
         )
         try {
-            val connection = connectToDB()
-            val statement = connection.createStatement()
+            val statement = connection!!.createStatement()
             val bookSelect = "SELECT * FROM books WHERE id_book = $bookID"
             val result = statement.executeQuery(bookSelect)
 
@@ -68,8 +65,6 @@ class Database {
                 book = getBookFromResult(result)
             }
             statement.close()
-            connection.close()
-            println("Disconnected from database")
 
         } catch (e: SQLException) {
             println("Error " + e.errorCode + ": " + e.message)
@@ -79,11 +74,10 @@ class Database {
 
     fun updateBook(bookID: String, bookToUpdate: Book) {
         try {
-            val connection = connectToDB()
 
             val bookSentence = "UPDATE books SET title=?, author=?, publication_year=?," +
                     "synopsis=?, book_cover=?, state=?, stock_total=?, stock_remaining=?, genre=?  WHERE id_book = $bookID"
-            val preparedBook: PreparedStatement = connection.prepareStatement(bookSentence)
+            val preparedBook: PreparedStatement = connection!!.prepareStatement(bookSentence)
             preparedBook.setString(1, bookToUpdate.title)
             preparedBook.setString(2, bookToUpdate.author)
             preparedBook.setString(3, bookToUpdate.publicationYear)
@@ -96,8 +90,6 @@ class Database {
             preparedBook.executeUpdate()
             preparedBook.close()
 
-            connection.close()
-            println("Disconnected from database")
 
         } catch (e: SQLException) {
             println("Error " + e.errorCode + ": " + e.message)
@@ -106,10 +98,9 @@ class Database {
 
     fun insertNewBook(newBook: Book) {
         try {
-            val connection = connectToDB()
 
             val bookSentence = "INSERT INTO books VALUES (DEFAULT, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
-            val preparedBook: PreparedStatement = connection.prepareStatement(bookSentence)
+            val preparedBook: PreparedStatement = connection!!.prepareStatement(bookSentence)
             //preparedBook.setInt(1, newBook.idBook.toInt())
             preparedBook.setString(1, newBook.title)
             preparedBook.setString(2, newBook.author)
@@ -123,8 +114,6 @@ class Database {
             preparedBook.executeUpdate()
             preparedBook.close()
 
-            connection.close()
-            println("Disconnected from database")
 
         } catch (e: SQLException) {
             println("Error " + e.errorCode + ": " + e.message)
@@ -133,13 +122,10 @@ class Database {
 
     fun deleteBook(bookID: String) {
         try {
-            val connection = connectToDB()
-            val statement = connection.createStatement()
+            val statement = connection!!.createStatement()
             val removeBook = "DELETE FROM books WHERE id_book = $bookID"
             statement.executeUpdate(removeBook)
             statement.close()
-            connection.close()
-            println("Disconnected from database")
 
         } catch (e: SQLException) {
             println("Error " + e.errorCode + ": " + e.message)
@@ -153,8 +139,7 @@ class Database {
         val userList = mutableListOf<User>()
 
         try {
-            val connection = connectToDB()
-            val statement = connection.createStatement()
+            val statement = connection!!.createStatement()
             val userSelect = "SELECT * FROM users"
             val result = statement.executeQuery(userSelect)
 
@@ -167,8 +152,6 @@ class Database {
                 userList.add(user)
             }
             statement.close()
-            connection.close()
-            println("Disconnected from database")
 
         } catch (e: SQLException) {
             println("Error " + e.errorCode + ": " + e.message)
@@ -182,9 +165,8 @@ class Database {
             0, setOf<Int>(), false, ""
         )
         try {
-            val connection = connectToDB()
 
-            val statement = connection.createStatement()
+            val statement = connection!!.createStatement()
             val userSelect = "SELECT * FROM users WHERE id_user = $userID"
             val result = statement.executeQuery(userSelect)
 
@@ -193,8 +175,6 @@ class Database {
                 user = getUserFromResult(result, history)
             }
             statement.close()
-            connection.close()
-            println("Disconnected from database")
 
         } catch (e: SQLException) {
             println("Error " + e.errorCode + ": " + e.message)
@@ -205,11 +185,10 @@ class Database {
     fun updateUser(userID: String, userToUpdate: User) {
         //No updatea los libros leídos porque ya tenemos rutas y funciones específicas
         try {
-            val connection = connectToDB()
 
             val userSentence = "UPDATE users SET name=?, email=?, password=?," +
                     "user_type=?, borrowed_books_counter=?, banned=?, user_image=? WHERE id_user = $userID"
-            val preparedUser: PreparedStatement = connection.prepareStatement(userSentence)
+            val preparedUser: PreparedStatement = connection!!.prepareStatement(userSentence)
             preparedUser.setString(1, userToUpdate.name)
             preparedUser.setString(2, userToUpdate.email)
             preparedUser.setString(3, userToUpdate.password)
@@ -221,8 +200,6 @@ class Database {
             preparedUser.executeUpdate()
             preparedUser.close()
 
-            connection.close()
-            println("Disconnected from database")
 
         } catch (e: SQLException) {
             println("Error " + e.errorCode + ": " + e.message)
@@ -231,13 +208,10 @@ class Database {
 
     fun deleteUser(userID: String) {
         try {
-            val connection = connectToDB()
-            val statement = connection.createStatement()
+            val statement = connection!!.createStatement()
             val removeUser = "DELETE FROM users WHERE id_user = $userID"
             statement.executeUpdate(removeUser)
             statement.close()
-            connection.close()
-            println("Disconnected from database")
 
         } catch (e: SQLException) {
             println("Error " + e.errorCode + ": " + e.message)
@@ -246,9 +220,8 @@ class Database {
 
     fun insertNewUser(newUser: User) {
         try {
-            val connection = connectToDB()
             val userSentence = "INSERT INTO users VALUES (DEFAULT, ?, ?, ?, ?, ?, ?, ?, ?)"
-            val preparedUser: PreparedStatement = connection.prepareStatement(userSentence)
+            val preparedUser: PreparedStatement = connection!!.prepareStatement(userSentence)
            // preparedUser.setInt(1, newUser.idUser.toInt())
             preparedUser.setString(1, newUser.name)
             preparedUser.setString(2, newUser.email)
@@ -261,15 +234,13 @@ class Database {
             )
             preparedUser.setInt(5, newUser.borrowedBooksCounter)
             //Al crear usuario la lista de leídos está vacía
-            val booksRead = connection.createArrayOf("INT", newUser.bookHistory.toTypedArray())
+            val booksRead = connection!!.createArrayOf("INT", newUser.bookHistory.toTypedArray())
             preparedUser.setArray(6, booksRead)
             preparedUser.setBoolean(7, newUser.banned)
             preparedUser.setString(8, newUser.userImage)
             preparedUser.executeUpdate()
             preparedUser.close()
 
-            connection.close()
-            println("Disconnected from database")
 
         } catch (e: SQLException) {
             println("Error " + e.errorCode + ": " + e.message)
@@ -279,8 +250,7 @@ class Database {
     fun getUserLoans(userID: String): List<BookLoan> {
         val bookLoans = mutableListOf<BookLoan>()
         try {
-            val connection = connectToDB()
-            val statement = connection.createStatement()
+            val statement = connection!!.createStatement()
             val loanSelect = "SELECT * FROM book_loans WHERE id_user = $userID"
             val result = statement.executeQuery(loanSelect)
 
@@ -291,8 +261,6 @@ class Database {
                 bookLoans.add(bookLoan)
             }
             statement.close()
-            connection.close()
-            println("Disconnected from database")
 
         } catch (e: SQLException) {
             println("Error " + e.errorCode + ": " + e.message)
@@ -303,9 +271,8 @@ class Database {
     fun getLoanByBookID(userID: String, bookID: String): BookLoan {
         var bookLoan = BookLoan("", "", "", "")
         try {
-            val connection = connectToDB()
 
-            val statement = connection.createStatement()
+            val statement = connection!!.createStatement()
             val loanSelect = "SELECT * FROM book_loans WHERE id_user = $userID AND id_book = $bookID"
             val result = statement.executeQuery(loanSelect)
 
@@ -313,8 +280,6 @@ class Database {
                 bookLoan = getLoanFromResult(result)
             }
             statement.close()
-            connection.close()
-            println("Disconnected from database")
 
         } catch (e: SQLException) {
             println("Error " + e.errorCode + ": " + e.message)
@@ -324,9 +289,8 @@ class Database {
 
     fun addBookLoan(newBookLoan: BookLoan) {
         try {
-            val connection = connectToDB()
             val loanSentence = "INSERT INTO book_loans VALUES (?, ?, ?, ?)"
-            val preparedLoan: PreparedStatement = connection.prepareStatement(loanSentence)
+            val preparedLoan: PreparedStatement = connection!!.prepareStatement(loanSentence)
             preparedLoan.setInt(1, newBookLoan.idUser.toInt())
             preparedLoan.setInt(2, newBookLoan.idBook.toInt())
             preparedLoan.setString(3, newBookLoan.startDate)
@@ -334,8 +298,6 @@ class Database {
             preparedLoan.executeUpdate()
             preparedLoan.close()
 
-            connection.close()
-            println("Disconnected from database")
 
         } catch (e: SQLException) {
             println("Error " + e.errorCode + ": " + e.message)
@@ -344,13 +306,10 @@ class Database {
 
     fun deleteBookLoan(userID: String, bookID: String) {
         try {
-            val connection = connectToDB()
-            val statement = connection.createStatement()
+            val statement = connection!!.createStatement()
             val removeLoan = "DELETE FROM book_loans WHERE id_user = $userID AND id_book = $bookID"
             statement.executeUpdate(removeLoan)
             statement.close()
-            connection.close()
-            println("Disconnected from database")
 
         } catch (e: SQLException) {
             println("Error " + e.errorCode + ": " + e.message)
@@ -359,15 +318,12 @@ class Database {
 
     fun addBookRead(userID: String, bookID: String) {
         try {
-            val connection = connectToDB()
 
-            val statement = connection.createStatement()
+            val statement = connection!!.createStatement()
             val updateArray =
                 "UPDATE users SET book_history = array_append(book_history, $bookID) WHERE id_user = $userID"
             statement.executeUpdate(updateArray)
             statement.close()
-            connection.close()
-            println("Disconnected from database")
 
         } catch (e: SQLException) {
             println("Error " + e.errorCode + ": " + e.message)
@@ -376,14 +332,11 @@ class Database {
 
     fun deleteBookRead(userID: String, bookID: String) {
         try {
-            val connection = connectToDB()
-            val statement = connection.createStatement()
+            val statement = connection!!.createStatement()
             val removeElement =
                 "UPDATE users SET book_history = array_remove(book_history, $bookID) WHERE id_user = $userID"
             statement.executeUpdate(removeElement)
             statement.close()
-            connection.close()
-            println("Disconnected from database")
 
         } catch (e: SQLException) {
             println("Error " + e.errorCode + ": " + e.message)
@@ -394,9 +347,8 @@ class Database {
     fun getBookHistoryFromUser(userID: String): Set<Int> {
         var history = setOf<Int>()
         try {
-            val connection = connectToDB()
 
-            val statement = connection.createStatement()
+            val statement = connection!!.createStatement()
             val userSelect = "SELECT book_history FROM users WHERE id_user = $userID"
             val result = statement.executeQuery(userSelect)
 
@@ -405,8 +357,6 @@ class Database {
                     .map { it }.toSet()
             }
             statement.close()
-            connection.close()
-            println("Disconnected from database")
 
         } catch (e: SQLException) {
             println("Error " + e.errorCode + ": " + e.message)
@@ -488,8 +438,7 @@ class Database {
         val reviewList = mutableListOf<Review>()
 
         try {
-            val connection = connectToDB()
-            val statement = connection.createStatement()
+            val statement = connection!!.createStatement()
             val reviewSelect = "SELECT * FROM reviews WHERE id_book = $bookID"
             val result = statement.executeQuery(reviewSelect)
 
@@ -498,8 +447,6 @@ class Database {
                 reviewList.add(review)
             }
             statement.close()
-            connection.close()
-            println("Disconnected from database")
 
         } catch (e: SQLException) {
             println("Error " + e.errorCode + ": " + e.message)
@@ -510,8 +457,7 @@ class Database {
     fun getBookReviewByID(bookID: String, reviewID: String): Review {
         var review = Review("", "", "", "", "", 0)
         try {
-            val connection = connectToDB()
-            val statement = connection.createStatement()
+            val statement = connection!!.createStatement()
             val reviewSelect = "SELECT * FROM reviews WHERE id_book = $bookID AND id_review = $reviewID"
             val result = statement.executeQuery(reviewSelect)
 
@@ -519,8 +465,6 @@ class Database {
                 review = getReviewFromResult(result)
             }
             statement.close()
-            connection.close()
-            println("Disconnected from database")
 
         } catch (e: SQLException) {
             println("Error " + e.errorCode + ": " + e.message)
@@ -530,13 +474,10 @@ class Database {
 
     fun deleteReview(bookID: String, reviewID: String) {
         try {
-            val connection = connectToDB()
-            val statement = connection.createStatement()
+            val statement = connection!!.createStatement()
             val removeReview = "DELETE FROM reviews WHERE id_book = $bookID AND id_review = $reviewID"
             statement.executeUpdate(removeReview)
             statement.close()
-            connection.close()
-            println("Disconnected from database")
 
         } catch (e: SQLException) {
             println("Error " + e.errorCode + ": " + e.message)
@@ -545,13 +486,10 @@ class Database {
 
     fun deleteReviewsFromUser(userID: String){
         try {
-            val connection = connectToDB()
-            val statement = connection.createStatement()
+            val statement = connection!!.createStatement()
             val removeReview = "DELETE FROM reviews WHERE id_user = $userID"
             statement.executeUpdate(removeReview)
             statement.close()
-            connection.close()
-            println("Disconnected from database")
 
         } catch (e: SQLException) {
             println("Error " + e.errorCode + ": " + e.message)
@@ -560,9 +498,8 @@ class Database {
 
     fun insertNewReview(newReview: Review) {
         try {
-            val connection = connectToDB()
             val reviewSentence = "INSERT INTO reviews VALUES (DEFAULT, ?, ?, ?, ?, ?)"
-            val preparedReview: PreparedStatement = connection.prepareStatement(reviewSentence)
+            val preparedReview: PreparedStatement = connection!!.prepareStatement(reviewSentence)
             //preparedReview.setInt(1, newReview.idReview.toInt())
             preparedReview.setInt(1, newReview.idBook.toInt())
             preparedReview.setInt(2, newReview.idUser.toInt())
@@ -571,8 +508,6 @@ class Database {
             preparedReview.setInt(5, newReview.rating)
             preparedReview.executeUpdate()
             preparedReview.close()
-            connection.close()
-            println("Disconnected from database")
 
         } catch (e: SQLException) {
             println("Error " + e.errorCode + ": " + e.message)
@@ -582,12 +517,11 @@ class Database {
     fun updateReview(reviewID: String, reviewToUpdate: Review) {
         //Sólo updatea la fecha, el comentario y la puntuación
         try {
-            val connection = connectToDB()
 
             val reviewSentence =
                 "UPDATE reviews SET date=?, review=?, rating=? WHERE id_review = $reviewID " +
                         "AND id_book = ${reviewToUpdate.idBook} AND id_user = ${reviewToUpdate.idUser}"
-            val preparedReview: PreparedStatement = connection.prepareStatement(reviewSentence)
+            val preparedReview: PreparedStatement = connection!!.prepareStatement(reviewSentence)
             preparedReview.setString(1, reviewToUpdate.date)
             preparedReview.setString(2, reviewToUpdate.comment)
             preparedReview.setInt(3, reviewToUpdate.rating)
@@ -595,8 +529,6 @@ class Database {
             preparedReview.executeUpdate()
             preparedReview.close()
 
-            connection.close()
-            println("Disconnected from database")
 
         } catch (e: SQLException) {
             println("Error " + e.errorCode + ": " + e.message)

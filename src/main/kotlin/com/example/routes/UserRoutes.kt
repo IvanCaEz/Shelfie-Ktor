@@ -12,13 +12,13 @@ import java.io.File
 import java.io.FileNotFoundException
 
 fun Route.userRouting() {
-
+ val db = Database()
     route("/users") {
         /**
          * GET todos los usuarios
          */
         get {
-            val userList = Database().getAllUsers()
+            val userList = db.getAllUsers()
             if (userList.isNotEmpty()) {
                 call.respond(userList)
             } else call.respondText("No users found.", status = HttpStatusCode.OK)
@@ -34,10 +34,10 @@ fun Route.userRouting() {
             if (id.isNullOrBlank()) return@get call.respondText(
                 "Missing user id.", status = HttpStatusCode.BadRequest
             )
-            val userList = Database().getAllUsers()
+            val userList = db.getAllUsers()
             if (userList.isNotEmpty()) {
                 if (userList.filter { it.idUser == id }.size == 1) {
-                    return@get call.respond(Database().getUserByID(id))
+                    return@get call.respond(db.getUserByID(id))
                 } else call.respondText("User with id $id not found", status = HttpStatusCode.NotFound)
             } else call.respondText("No users found.", status = HttpStatusCode.OK)
         }
@@ -52,18 +52,18 @@ fun Route.userRouting() {
             if (id.isNullOrBlank()) return@get call.respondText(
                 "Missing user id.", status = HttpStatusCode.BadRequest
             )
-            val userList = Database().getAllUsers()
+            val userList = db.getAllUsers()
             if (userList.isNotEmpty()) {
                 if (userList.filter { it.idUser == id }.size == 1) {
                     println("User encontrado")
                     // No sé por qué no se añade el historial en la otra función así que aquí se lo añadimos
-                    userList[0].bookHistory = Database().getBookHistoryFromUser(id)
+                    userList[0].bookHistory = db.getBookHistoryFromUser(id)
                     if (userList[0].bookHistory.isNotEmpty()) {
                         // Por cada ID de libro que tiene el bookHistory, obtenemos los datos del libro y retornamos
                         // la lista
                         val historyList = mutableListOf<Book>()
                         userList[0].bookHistory.forEach { bookID ->
-                            historyList.add(Database().getBookByID(bookID.toString()))
+                            historyList.add(db.getBookByID(bookID.toString()))
                         }
                         return@get call.respond(historyList)
                     } else {
@@ -83,12 +83,12 @@ fun Route.userRouting() {
             if (id.isNullOrBlank()) return@get call.respondText(
                 "Missing user id.", status = HttpStatusCode.BadRequest
             )
-            val userList = Database().getAllUsers()
+            val userList = db.getAllUsers()
             if (userList.isNotEmpty()) {
                 if (userList.filter { it.idUser == id }.size == 1) {
                     println("User encontrado")
                     // No sé por qué no se añade el historial en la otra función así que aquí se lo añadimos
-                    val userLoans = Database().getUserLoans(id)
+                    val userLoans = db.getUserLoans(id)
                     if (userLoans.isNotEmpty()) {
                         return@get call.respond(userLoans)
                     } else {
@@ -108,15 +108,15 @@ fun Route.userRouting() {
             if (id.isNullOrBlank()) return@get call.respondText(
                 "Missing user id.", status = HttpStatusCode.BadRequest
             )
-            val userList = Database().getAllUsers()
+            val userList = db.getAllUsers()
             if (userList.isNotEmpty()) {
                 if (userList.filter { it.idUser == id }.size == 1) {
                     println("User encontrado")
                     // Obtenemos los préstamos del usuario
-                    val userLoans = Database().getUserLoans(id)
+                    val userLoans = db.getUserLoans(id)
                     // Miramos que tenga ese libro prestado y lo devolvemos
                     if (userLoans.filter { it.idBook == bookID }.size == 1) {
-                        val bookLoan = Database().getLoanByBookID(id, bookID!!)
+                        val bookLoan = db.getLoanByBookID(id, bookID!!)
                         return@get call.respond(bookLoan)
                     } else {
                         return@get call.respondText("Book with id $bookID was not been loaned.")
@@ -139,7 +139,7 @@ fun Route.userRouting() {
             )
             val id = call.parameters["id"]
 
-            val userList = Database().getAllUsers()
+            val userList = db.getAllUsers()
             if (userList.isNotEmpty()) {
                 if (userList.filter { it.idUser == id }.size == 1) {
                     file = File("src/main/kotlin/com/example/user-images/" + userList[0].userImage)
@@ -214,7 +214,7 @@ fun Route.userRouting() {
             }
             println("Ahora posteamos")
             // Si no hay ningún usuario ya con ese mail, lo añadimos a la base de datos con esa ID
-            val userList = Database().getAllUsers()
+            val userList = db.getAllUsers()
             if (userList.any { it.email == newUser.email }) {
                 call.respondText(
                     "Email ${newUser.email} already exists in our database.",
@@ -222,7 +222,7 @@ fun Route.userRouting() {
                 )
             } else {
 
-                Database().insertNewUser(newUser)
+                db.insertNewUser(newUser)
 
                 call.respondText("User stored correctly.", status = HttpStatusCode.Created)
                 return@post call.respond(newUser)
@@ -238,13 +238,13 @@ fun Route.userRouting() {
             if (userID.isNullOrBlank()) return@post call.respondText(
                 "Missing user id.", status = HttpStatusCode.BadRequest
             )
-            val userLoans = Database().getUserLoans(userID)
+            val userLoans = db.getUserLoans(userID)
             // Si tiene menos de 3 préstamos puede pedir prestado otro
             if (userLoans.size < 3) {
                 // Si el libro que quiere pedir prestado no lo ha pedido ya prestado
                 if (userLoans.none { it.idBook == bookLoan.idBook }) {
                     // Lo añadimos
-                    Database().addBookLoan(bookLoan)
+                    db.addBookLoan(bookLoan)
 
                     call.respondText(
                         "User with id $userID has borrowed book with id ${bookLoan.idBook} until ${bookLoan.endDate}.",
@@ -268,15 +268,15 @@ fun Route.userRouting() {
         if (userID.isNullOrBlank()) return@post call.respondText(
             "Missing user id.", status = HttpStatusCode.BadRequest
         )
-        val userList = Database().getAllUsers()
+        val userList = db.getAllUsers()
         if (userList.isNotEmpty()) {
             if (userList.filter { it.idUser == userID }.size == 1) {
                 // Si el historial de libros leídos no tiene el id del libro, lo añadimos
                 // No sé por qué no se añade el historial en la otra función así que aquí se lo añadimos
-                userList[0].bookHistory = Database().getBookHistoryFromUser(userID)
+                userList[0].bookHistory = db.getBookHistoryFromUser(userID)
                 if (!userList[0].bookHistory.contains(book.idBook.toInt())) {
                     // Lo añadimos
-                    Database().addBookRead(userID, book.idBook)
+                    db.addBookRead(userID, book.idBook)
 
                     call.respondText(
                         "Book with id ${book.idBook} added to book history of user with id $userID correctly.",
@@ -333,8 +333,8 @@ fun Route.userRouting() {
                 is PartData.FileItem -> {
                     try {
                         userToUpdate.userImage = part.originalFileName as String
-                        if (userToUpdate.userImage != Database().getUserByID(id).userImage) {
-                            File("src/main/kotlin/com/example/user-images/" + Database().getUserByID(id).userImage).delete()
+                        if (userToUpdate.userImage != db.getUserByID(id).userImage) {
+                            File("src/main/kotlin/com/example/user-images/" + db.getUserByID(id).userImage).delete()
                             val fileBytes = part.streamProvider().readBytes()
                             File("src/main/kotlin/com/example/user-images/" + userToUpdate.userImage).writeBytes(
                                 fileBytes
@@ -351,12 +351,12 @@ fun Route.userRouting() {
 
             println("Subido ${part.name}")
         }
-        userToUpdate.bookHistory = Database().getBookHistoryFromUser(id)
-        userToUpdate.borrowedBooksCounter = Database().getUserLoans(id).size
-        val userList = Database().getAllUsers()
+        userToUpdate.bookHistory = db.getBookHistoryFromUser(id)
+        userToUpdate.borrowedBooksCounter = db.getUserLoans(id).size
+        val userList = db.getAllUsers()
         if (userList.isNotEmpty()) {
             if (userList.filter { it.idUser == id }.size == 1) {
-                Database().updateUser(id, userToUpdate)
+                db.updateUser(id, userToUpdate)
                 return@put call.respondText(
                     "User with id $id has been updated.", status = HttpStatusCode.Accepted
                 )
@@ -373,12 +373,12 @@ fun Route.userRouting() {
             "Missing user id",
             status = HttpStatusCode.BadRequest
         )
-        val userList = Database().getAllUsers()
+        val userList = db.getAllUsers()
         if (userList.isNotEmpty()) {
             if (userList.filter { it.idUser == id }.size == 1) {
                 // Primero quitamos las reviews y luego al usuario
-                Database().deleteReviewsFromUser(id!!)
-                Database().deleteUser(id)
+                db.deleteReviewsFromUser(id!!)
+                db.deleteUser(id)
                 return@delete call.respondText(
                     "User removed successfully.", status = HttpStatusCode.Accepted
                 )
@@ -398,13 +398,13 @@ fun Route.userRouting() {
             )
 
             val bookID = call.parameters["bookid"]
-            val userList = Database().getAllUsers()
+            val userList = db.getAllUsers()
             if (userList.isNotEmpty()) {
                 if (userList.filter { it.idUser == userID }.size == 1) {
-                    val bookLoans = Database().getUserLoans(userID)
+                    val bookLoans = db.getUserLoans(userID)
                     if (bookLoans.filter { it.idBook == bookID }.size == 1) {
                         // Lo quitamos
-                        Database().deleteBookLoan(userID, bookID!!)
+                        db.deleteBookLoan(userID, bookID!!)
                         return@delete call.respondText(
                             "Book with id $bookID has been returned.",
                             status = HttpStatusCode.Accepted
@@ -423,16 +423,16 @@ fun Route.userRouting() {
         )
 
         val bookID = call.parameters["bookid"]
-        val userList = Database().getAllUsers()
+        val userList = db.getAllUsers()
         if (userList.isNotEmpty()) {
             if (userList.filter { it.idUser == userID }.size == 1) {
                 // Si el historial de libros leídos tiene el id del libro
                 // No sé por qué no se añade el historial en la otra función así que aquí se lo añadimos
-                userList[0].bookHistory = Database().getBookHistoryFromUser(userID)
+                userList[0].bookHistory = db.getBookHistoryFromUser(userID)
                 if (userList[0].bookHistory.contains(bookID!!.toInt())) {
                     // Lo quitamos
                     println("HOli")
-                    Database().deleteBookRead(userID, bookID)
+                    db.deleteBookRead(userID, bookID)
                     return@delete call.respondText(
                         "Book with id $bookID removed successfully from user history.",
                         status = HttpStatusCode.Accepted

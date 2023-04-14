@@ -10,6 +10,8 @@ import io.ktor.server.routing.*
 
 
 fun Route.reviewRouting() {
+    val db = Database()
+
     route("/books/{bookid?}/reviews") {
 
         // GET
@@ -17,11 +19,11 @@ fun Route.reviewRouting() {
         get {
             val bookID = call.parameters["bookid"]
 
-            val listOfBooksFromDB = Database().getAllBooks()
+            val listOfBooksFromDB = db.getAllBooks()
             if (listOfBooksFromDB.isNotEmpty()) {
                 if (listOfBooksFromDB.filter { it.idBook == bookID }.size == 1) {
                     //Miramos que no esté vacía la lista de reviews del libro
-                    val bookReviews = Database().getAllReviewsOfBook(bookID!!)
+                    val bookReviews = db.getAllReviewsOfBook(bookID!!)
                     if (bookReviews.isNotEmpty()) {
                         return@get call.respond(bookReviews)
                     } else call.respondText("No reviews found in book $bookID.", status = HttpStatusCode.NotFound)
@@ -38,13 +40,13 @@ fun Route.reviewRouting() {
             val bookID = call.parameters["bookid"]
             val id = call.parameters["id"]
 
-            val listOfBooksFromDB = Database().getAllBooks()
+            val listOfBooksFromDB = db.getAllBooks()
             if (listOfBooksFromDB.isNotEmpty()) {
                 if (listOfBooksFromDB.filter { it.idBook == bookID }.size == 1) {
                     //Miramos que no esté vacía la lista de reviews del libro
-                    val bookReviews = Database().getAllReviewsOfBook(bookID!!)
+                    val bookReviews = db.getAllReviewsOfBook(bookID!!)
                     if (bookReviews.isNotEmpty()) {
-                        val review = Database().getBookReviewByID(bookID, id!!)
+                        val review = db.getBookReviewByID(bookID, id!!)
                         // Si el ID de la review es un string vacío significa que no hay review
                         if (review.idReview != "") {
                             return@get call.respond(review)
@@ -65,9 +67,9 @@ fun Route.reviewRouting() {
             val bookID = call.parameters["bookid"]
             val reviewCall = call.receive<Review>()
             // Filtramos lista de libros por ID de libro (Cambiar a llamar al libro?)
-            val listOfBooksFromDB = Database().getAllBooks()
+            val listOfBooksFromDB = db.getAllBooks()
             if (listOfBooksFromDB.filter { it.idBook == bookID }.size == 1) {
-                Database().insertNewReview(reviewCall)
+                db.insertNewReview(reviewCall)
                 call.respondText("Review stored correctly.", status = HttpStatusCode.Created)
                 return@post call.respond(reviewCall)
             } else return@post call.respondText(
@@ -87,10 +89,10 @@ fun Route.reviewRouting() {
             )
 
             val reviewToUpdate = call.receive<Review>()
-            if (Database().getBookByID(bookID!!).idBook != "") {
-                val review = Database().getBookReviewByID(bookID, reviewID)
+            if (db.getBookByID(bookID!!).idBook != "") {
+                val review = db.getBookReviewByID(bookID, reviewID)
                 if (review.idReview != "") {
-                    Database().updateReview(reviewID, reviewToUpdate)
+                    db.updateReview(reviewID, reviewToUpdate)
 
                     return@put call.respondText(
                         "Review with id $reviewID has been updated.", status = HttpStatusCode.Accepted
@@ -113,9 +115,9 @@ fun Route.reviewRouting() {
                 status = HttpStatusCode.BadRequest
             )
 
-            val review = Database().getBookReviewByID(bookID!!, reviewID)
+            val review = db.getBookReviewByID(bookID!!, reviewID)
             if (review.idReview != "") {
-                Database().deleteReview(bookID, reviewID)
+                db.deleteReview(bookID, reviewID)
                 call.respondText("Review with id $reviewID in book $bookID has been deleted.")
             } else call.respondText(
                 "Review with id $reviewID from book with id $bookID not found.",

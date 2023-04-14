@@ -13,11 +13,13 @@ import java.io.File
 import java.io.FileNotFoundException
 
 fun Route.bookRouting() {
+    val db = Database()
+
     route("/books") {
         // GET
         // Todos los libros
         get {
-            val listOfBooksFromDB = Database().getAllBooks()
+            val listOfBooksFromDB = db.getAllBooks()
             if (listOfBooksFromDB.isNotEmpty()) call.respond(listOfBooksFromDB)
             else call.respondText("No books found.", status = HttpStatusCode.OK)
         }
@@ -28,11 +30,11 @@ fun Route.bookRouting() {
                 "Missing book id.", status = HttpStatusCode.BadRequest
             )
 
-            val listOfBooksFromDB = Database().getAllBooks()
+            val listOfBooksFromDB = db.getAllBooks()
             if (listOfBooksFromDB.isNotEmpty()) {
                 val bookWeWant = listOfBooksFromDB.filter { it.idBook == id }
                 if (bookWeWant.size == 1) {
-                    return@get call.respond(Database().getBookByID(id))
+                    return@get call.respond(db.getBookByID(id))
                 } else call.respondText("Book with id $id not found.", status = HttpStatusCode.NotFound)
             } else call.respondText("No books found.", status = HttpStatusCode.OK)
         }
@@ -43,7 +45,7 @@ fun Route.bookRouting() {
                 "Missing book title.", status = HttpStatusCode.BadRequest
             )
 
-            val listOfBooksFromDB = Database().getAllBooks()
+            val listOfBooksFromDB = db.getAllBooks()
 
             if (listOfBooksFromDB.isNotEmpty()) {
                 val bookListByTittleDB = listOfBooksFromDB.filter { book ->
@@ -63,7 +65,7 @@ fun Route.bookRouting() {
                 status = HttpStatusCode.BadRequest
             )
 
-            val listOfBooksFromDB = Database().getAllBooks()
+            val listOfBooksFromDB = db.getAllBooks()
             if (listOfBooksFromDB.isNotEmpty()) {
                 val bookWeWant = listOfBooksFromDB.filter { it.idBook == id }
                 if (bookWeWant.size == 1) {
@@ -121,7 +123,7 @@ fun Route.bookRouting() {
             }
 
 
-            Database().insertNewBook(book)
+            db.insertNewBook(book)
 
             call.respondText("Book stored correctly.", status = HttpStatusCode.Created)
             return@post call.respond(book)
@@ -160,8 +162,8 @@ fun Route.bookRouting() {
                         try {
                             book.bookCover = part.originalFileName as String
                             // Si cambia la imagen, borramos la ruta anterior y guardamos la nueva
-                            if (book.bookCover != Database().getBookByID(id).bookCover){
-                                File("src/main/kotlin/com/example/book-covers/" +Database().getBookByID(id).bookCover).delete()
+                            if (book.bookCover != db.getBookByID(id).bookCover){
+                                File("src/main/kotlin/com/example/book-covers/" +db.getBookByID(id).bookCover).delete()
                                 val fileBytes = part.streamProvider().readBytes()
                                 File("src/main/kotlin/com/example/book-covers/" + book.bookCover).writeBytes(fileBytes)
                                 println("Imagen subida")
@@ -177,10 +179,10 @@ fun Route.bookRouting() {
                 println("Subido ${part.name}")
             }
 
-            val listOfBooksFromDB = Database().getAllBooks()
+            val listOfBooksFromDB = db.getAllBooks()
             if (listOfBooksFromDB.isNotEmpty()) {
                 if (listOfBooksFromDB.filter { it.idBook == id }.size == 1) {
-                    Database().updateBook(id, book)
+                    db.updateBook(id, book)
                     return@put call.respondText(
                         "Book with id $id has been updated.", status = HttpStatusCode.Accepted
                     )
@@ -196,10 +198,10 @@ fun Route.bookRouting() {
                 "Missing book id.",
                 status = HttpStatusCode.BadRequest
             )
-            val listOfBooksFromDB = Database().getAllBooks()
+            val listOfBooksFromDB = db.getAllBooks()
             if (listOfBooksFromDB.isNotEmpty()) {
                 if (listOfBooksFromDB.filter { it.idBook == id }.size == 1) {
-                    Database().deleteBook(id)
+                    db.deleteBook(id)
                     return@delete call.respondText(
                         "Book removed successfully.", status = HttpStatusCode.Accepted
                     )

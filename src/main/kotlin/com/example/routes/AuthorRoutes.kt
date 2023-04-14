@@ -10,13 +10,14 @@ import io.ktor.util.*
 
 //Esta ruta solo se podrá usar para obtener los libros que ha escrito un determinado Autor
 fun Route.authorRouting(){
+    val db = Database()
     route("/author"){
         get ( "{name}" ){
             val authorName = call.parameters["name"]
             if (authorName.isNullOrBlank()) return@get call.respondText(
                 "Missing author name.", status = HttpStatusCode.BadRequest
             )
-            val bookList = Database().getAllBooks()
+            val bookList = db.getAllBooks()
 
             val bookListByAuthor = bookList.filter { book ->
                 book.author.toLowerCasePreservingASCIIRules().contains(authorName)  }
