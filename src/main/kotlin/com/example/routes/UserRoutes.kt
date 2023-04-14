@@ -166,19 +166,21 @@ fun Route.userRouting() {
         post {
             val userData = call.receiveMultipart()
             val newUser = User(
-                "", "", "", "", UserType.NORMAL,
+                "", "", "", "", "", "", UserType.NORMAL,
                 0, setOf<Int>(), false, ""
             )
             // Separem el tractament de les dades entre: dades primitives i fitxers
             userData.forEachPart { part ->
                 when (part) {
-                    // No recogemos la lista de libros leídos porque empieza con 0
+                    // No recogemos la lista de libros leídos ni los géneros favoritos porque empiezan vacías
                     is PartData.FormItem -> {
                         when (part.name) {
                             //"idUser" -> newUser.idUser = part.value
                             "name" -> newUser.name = part.value
                             "email" -> newUser.email = part.value
                             "password" -> newUser.password = part.value
+                            "userName" -> newUser.userName = part.value
+                            "description" -> newUser.description = part.value
                             "userType" -> when (part.value) {
                                 "ADMIN" -> newUser.userType = UserType.ADMIN
 
@@ -302,26 +304,26 @@ fun Route.userRouting() {
         )
         val userData = call.receiveMultipart()
         val userToUpdate = User(
-            "", "", "", "", UserType.NORMAL,
+            "", "", "", "","", "", UserType.NORMAL,
             0, setOf<Int>(), false, ""
         )
         // Separem el tractament de les dades entre: dades primitives i fitxers
         userData.forEachPart { part ->
             when (part) {
-                // No recogemos la lista de libros leídos porque empieza con 0
                 is PartData.FormItem -> {
                     when (part.name) {
-                        //"idUser" -> newUser.idUser = part.value
                         "name" -> userToUpdate.name = part.value
                         "email" -> userToUpdate.email = part.value
                         "password" -> userToUpdate.password = part.value
+                        "userName" -> userToUpdate.userName = part.value
+                        "description" -> userToUpdate.description = part.value
                         "userType" -> when (part.value) {
                             "ADMIN" -> userToUpdate.userType = UserType.ADMIN
 
                             else -> userToUpdate.userType = UserType.NORMAL
                         }
 
-                       // "borrowedBooksCounter" -> userToUpdate.borrowedBooksCounter = part.value.toInt()
+                       "borrowedBooksCounter" -> userToUpdate.borrowedBooksCounter = part.value.toInt()
                         "banned" -> userToUpdate.banned = part.value.toBoolean()
                     }
                 }

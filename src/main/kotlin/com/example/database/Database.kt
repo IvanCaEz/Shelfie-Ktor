@@ -145,8 +145,6 @@ class Database {
 
             while (result.next()) {
                 val history = result.getArray("book_history").array as Array<Int>
-                println(history.size)
-
                 val user = getUserFromResult(result, history)
 
                 userList.add(user)
@@ -161,7 +159,7 @@ class Database {
 
     fun getUserByID(userID: String): User {
         var user = User(
-            "", "", "", "", UserType.NORMAL,
+            "", "", "", "", "", "", UserType.NORMAL,
             0, setOf<Int>(), false, ""
         )
         try {
@@ -172,7 +170,7 @@ class Database {
 
             while (result.next()) {
                 val history = result.getArray("book_history").array as Array<Int>
-                user = getUserFromResult(result, history)
+                 user = getUserFromResult(result, history)
             }
             statement.close()
 
@@ -187,15 +185,18 @@ class Database {
         try {
 
             val userSentence = "UPDATE users SET name=?, email=?, password=?," +
-                    "user_type=?, borrowed_books_counter=?, banned=?, user_image=? WHERE id_user = $userID"
+                    "user_name=?, description=?, user_type=?, borrowed_books_counter=?," +
+                    " banned=?, user_image=? WHERE id_user = $userID"
             val preparedUser: PreparedStatement = connection!!.prepareStatement(userSentence)
             preparedUser.setString(1, userToUpdate.name)
             preparedUser.setString(2, userToUpdate.email)
             preparedUser.setString(3, userToUpdate.password)
-            preparedUser.setString(4, userToUpdate.userType.toString())
-            preparedUser.setInt(5, userToUpdate.borrowedBooksCounter)
-            preparedUser.setBoolean(6, userToUpdate.banned)
-            preparedUser.setString(7, userToUpdate.userImage)
+            preparedUser.setString(4, userToUpdate.userName)
+            preparedUser.setString(5, userToUpdate.description)
+            preparedUser.setString(6, userToUpdate.userType.toString())
+            preparedUser.setInt(7, userToUpdate.borrowedBooksCounter)
+            preparedUser.setBoolean(8, userToUpdate.banned)
+            preparedUser.setString(9, userToUpdate.userImage)
 
             preparedUser.executeUpdate()
             preparedUser.close()
@@ -220,24 +221,28 @@ class Database {
 
     fun insertNewUser(newUser: User) {
         try {
-            val userSentence = "INSERT INTO users VALUES (DEFAULT, ?, ?, ?, ?, ?, ?, ?, ?)"
+            val userSentence = "INSERT INTO users VALUES (DEFAULT, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
             val preparedUser: PreparedStatement = connection!!.prepareStatement(userSentence)
-           // preparedUser.setInt(1, newUser.idUser.toInt())
             preparedUser.setString(1, newUser.name)
             preparedUser.setString(2, newUser.email)
             preparedUser.setString(3, newUser.password)
+            preparedUser.setString(4, newUser.userName)
+            preparedUser.setString(5, newUser.description)
             preparedUser.setString(
-                4, when (newUser.userType) {
+                6, when (newUser.userType) {
                     UserType.ADMIN -> "ADMIN"
                     else -> "NORMAL"
                 }
             )
-            preparedUser.setInt(5, newUser.borrowedBooksCounter)
+            preparedUser.setInt(7, newUser.borrowedBooksCounter)
             //Al crear usuario la lista de leídos está vacía
             val booksRead = connection!!.createArrayOf("INT", newUser.bookHistory.toTypedArray())
-            preparedUser.setArray(6, booksRead)
-            preparedUser.setBoolean(7, newUser.banned)
-            preparedUser.setString(8, newUser.userImage)
+            preparedUser.setArray(8, booksRead)
+            preparedUser.setBoolean(9, newUser.banned)
+            preparedUser.setString(10, newUser.userImage)
+
+
+
             preparedUser.executeUpdate()
             preparedUser.close()
 
@@ -316,6 +321,7 @@ class Database {
         }
     }
 
+
     fun addBookRead(userID: String, bookID: String) {
         try {
 
@@ -364,6 +370,26 @@ class Database {
         return history
     }
 
+    fun getFavGenresFromUser(userID: String): Set<String> {
+        var favGenres = setOf<String>()
+        try {
+
+            val statement = connection!!.createStatement()
+            val userSelect = "SELECT favorite_genres FROM users WHERE id_user = $userID"
+            val result = statement.executeQuery(userSelect)
+
+            while (result.next()) {
+                favGenres = (result.getArray("favorite_genres").array as Array<String>)
+                    .map { it }.toSet()
+            }
+            statement.close()
+
+        } catch (e: SQLException) {
+            println("Error " + e.errorCode + ": " + e.message)
+        }
+        return favGenres
+    }
+
     /**
      * Esta función transforma el resultado de la query de la base de datos en un libro.
      * @param result El resultado de la query con toda la info del libro.
@@ -394,6 +420,8 @@ class Database {
             result.getString("name"),
             result.getString("email"),
             result.getString("password"),
+            result.getString("user_name"),
+            result.getString("description"),
             when (result.getString("user_type")) {
                 "ADMIN" -> UserType.ADMIN
                 else -> UserType.NORMAL
@@ -434,6 +462,25 @@ class Database {
     }
 
     // REVIEWS
+    fun getAllReviewsOfUser(userID: String): List<Review> {
+        val reviewList = mutableListOf<Review>()
+
+        try {
+            val statement = connection!!.createStatement()
+            val reviewSelect = "SELECT * FROM reviews WHERE id_user = $userID"
+            val result = statement.executeQuery(reviewSelect)
+
+            while (result.next()) {
+                val review = getReviewFromResult(result)
+                reviewList.add(review)
+            }
+            statement.close()
+
+        } catch (e: SQLException) {
+            println("Error " + e.errorCode + ": " + e.message)
+        }
+        return reviewList.toList()
+    }
     fun getAllReviewsOfBook(bookID: String): List<Review> {
         val reviewList = mutableListOf<Review>()
 

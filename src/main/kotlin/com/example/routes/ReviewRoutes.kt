@@ -12,10 +12,19 @@ import io.ktor.server.routing.*
 fun Route.reviewRouting() {
     val db = Database()
 
+    route("/users/{userid?}/reviews"){
+        get {
+            val userid = call.parameters["userid"]
+
+            val listOfUserReviews = db.getAllReviewsOfUser(userid!!)
+            if (listOfUserReviews.isNotEmpty()) {
+                        return@get call.respond(listOfUserReviews)
+            } else call.respondText("No books found.", status = HttpStatusCode.NotFound)
+        }
+    }
+
     route("/books/{bookid?}/reviews") {
-
         // GET
-
         get {
             val bookID = call.parameters["bookid"]
 
@@ -68,10 +77,17 @@ fun Route.reviewRouting() {
             val reviewCall = call.receive<Review>()
             // Filtramos lista de libros por ID de libro (Cambiar a llamar al libro?)
             val listOfBooksFromDB = db.getAllBooks()
+            val listOfReviews = db.getAllReviewsOfBook(bookID!!)
             if (listOfBooksFromDB.filter { it.idBook == bookID }.size == 1) {
-                db.insertNewReview(reviewCall)
-                call.respondText("Review stored correctly.", status = HttpStatusCode.Created)
-                return@post call.respond(reviewCall)
+                if (listOfReviews.filter { it.idBook == reviewCall.idBook && it.idUser == reviewCall.idUser }.isEmpty()){
+                    db.insertNewReview(reviewCall)
+                    call.respondText("Review stored correctly.", status = HttpStatusCode.Created)
+                    return@post call.respond(reviewCall)
+                } else return@post call.respondText(
+                    "User with id ${reviewCall.idUser} already reviewed this book, please update your review",
+                    status = HttpStatusCode.OK
+                )
+
             } else return@post call.respondText(
                 "Book with id ${reviewCall.idBook} doesn't exists.",
                 status = HttpStatusCode.OK

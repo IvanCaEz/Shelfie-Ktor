@@ -8,9 +8,12 @@ data class User(
     var name: String,
     var email: String,
     var password: String,
+    var userName: String,
+    var description: String,
     var userType: UserType,
     var borrowedBooksCounter: Int,
-    var bookHistory: Set<Int>, // <- Cambiar a set de Ints
+    var bookHistory: Set<Int>,
+   // var readBooks: Set<Int>,
     var banned: Boolean,
     var userImage:  String
 )
