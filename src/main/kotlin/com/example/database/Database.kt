@@ -1,13 +1,11 @@
 package com.example.database
 
 import com.example.models.*
-import io.ktor.util.reflect.*
 import java.sql.Connection
 import java.sql.DriverManager
 import java.sql.PreparedStatement
 import java.sql.ResultSet
 import java.sql.SQLException
-import kotlin.reflect.jvm.internal.impl.load.java.structure.JavaArrayType
 
 class Database {
     private var connection: Connection? = null
@@ -172,6 +170,30 @@ class Database {
                 val history = result.getArray("book_history").array as Array<Int>
                  user = getUserFromResult(result, history)
             }
+            statement.close()
+
+        } catch (e: SQLException) {
+            println("Error " + e.errorCode + ": " + e.message)
+        }
+        return user
+    }
+
+    fun getUserByUserName(userName: String): User {
+        var user = User(
+            "", "", "", "", "", "", UserType.NORMAL,
+            0, setOf<Int>(), false, ""
+        )
+        try {
+
+            val statement = connection!!.createStatement()
+            val userSelect = "SELECT * FROM users WHERE user_name = '$userName'"
+            val result = statement.executeQuery(userSelect)
+
+            while (result.next()) {
+                val history = result.getArray("book_history").array as Array<Int>
+                user = getUserFromResult(result, history)
+            }
+            println(user.userName+user.name)
             statement.close()
 
         } catch (e: SQLException) {

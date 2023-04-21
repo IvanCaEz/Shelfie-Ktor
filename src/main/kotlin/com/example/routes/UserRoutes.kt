@@ -2,6 +2,7 @@ package com.example.routes
 
 import com.example.database.Database
 import com.example.models.*
+import com.google.gson.Gson
 import io.ktor.http.*
 import io.ktor.http.content.*
 import io.ktor.server.application.*
@@ -39,6 +40,24 @@ fun Route.userRouting() {
                 if (userList.filter { it.idUser == id }.size == 1) {
                     return@get call.respond(db.getUserByID(id))
                 } else call.respondText("User with id $id not found", status = HttpStatusCode.NotFound)
+            } else call.respondText("No users found.", status = HttpStatusCode.OK)
+        }
+
+        /**
+         * GET usuario por username
+         * Miramos si tenemos un usuario con ese username en nuestra base de datos
+         */
+        get("/username/{userName}") {
+            val userName = call.parameters["userName"]
+
+            if (userName.isNullOrBlank()) return@get call.respondText(
+                "Missing user id.", status = HttpStatusCode.BadRequest
+            )
+            val userList = db.getAllUsers()
+            if (userList.isNotEmpty()) {
+                if (userList.filter { it.userName == userName }.size == 1) {
+                    return@get call.respond(db.getUserByUserName(userName))
+                } else call.respondText("User with username $userName not found.", status = HttpStatusCode.NotFound)
             } else call.respondText("No users found.", status = HttpStatusCode.OK)
         }
 
@@ -165,15 +184,20 @@ fun Route.userRouting() {
          */
         post {
             val userData = call.receiveMultipart()
-            val newUser = User(
+            var     newUser = User(
                 "", "", "", "", "", "", UserType.NORMAL,
                 0, setOf<Int>(), false, ""
             )
+            val gson = Gson()
             // Separem el tractament de les dades entre: dades primitives i fitxers
             userData.forEachPart { part ->
                 when (part) {
-                    // No recogemos la lista de libros leídos ni los géneros favoritos porque empiezan vacías
+                    // No recogemos la lista de libros leídos porque empieza vacía
                     is PartData.FormItem -> {
+                        if (part.name == "body") {
+                            newUser = gson.fromJson(part.value, User::class.java)
+                        }
+                        /*
                         when (part.name) {
                             //"idUser" -> newUser.idUser = part.value
                             "name" -> newUser.name = part.value
@@ -183,16 +207,14 @@ fun Route.userRouting() {
                             "description" -> newUser.description = part.value
                             "userType" -> when (part.value) {
                                 "ADMIN" -> newUser.userType = UserType.ADMIN
-
                                 else -> newUser.userType = UserType.NORMAL
                             }
-
                             "borrowedBooksCounter" -> newUser.borrowedBooksCounter = part.value.toInt()
                             "banned" -> newUser.banned = part.value.toBoolean()
                         }
+                         */
+
                     }
-
-
                     // Aquí recollim els fitxers
                     // Habrá que hacer en el android que este campo sea una imagen placeholder
                     // o no guardarla hasta que la cambie
@@ -226,8 +248,7 @@ fun Route.userRouting() {
 
                 db.insertNewUser(newUser)
 
-                call.respondText("User stored correctly.", status = HttpStatusCode.Created)
-                return@post call.respond(newUser)
+                return@post call.respondText("User stored correctly.", status = HttpStatusCode.Created)
             }
         }
 
