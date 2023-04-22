@@ -38,6 +38,8 @@ fun Application.module() {
     configureSerialization()
     configureRouting()
     install(CORS) {
+        allowMethod(HttpMethod.Get)
+        allowMethod(HttpMethod.Post)
         allowMethod(HttpMethod.Options)
         allowMethod(HttpMethod.Put)
         allowMethod(HttpMethod.Delete)
