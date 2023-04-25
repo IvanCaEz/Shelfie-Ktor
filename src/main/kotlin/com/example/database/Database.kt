@@ -205,7 +205,6 @@ class Database {
     fun updateUser(userID: String, userToUpdate: User) {
         //No updatea los libros leídos porque ya tenemos rutas y funciones específicas
         try {
-
             val userSentence = "UPDATE users SET name=?, email=?, password=?," +
                     "user_name=?, description=?, user_type=?, borrowed_books_counter=?," +
                     " banned=?, user_image=? WHERE id_user = $userID"
@@ -329,6 +328,24 @@ class Database {
         } catch (e: SQLException) {
             println("Error " + e.errorCode + ": " + e.message)
         }
+    }
+
+    fun updateBookLoan(userID: String, bookLoanToUpdate: BookLoan) {
+        try {
+            val loanSentence = "UPDATE book_loans SET id_user=?, id_book=?, start_date=?, end_date=? WHERE" +
+                    " id_user = $userID AND id_book = ${bookLoanToUpdate.idBook}"
+            val preparedLoan: PreparedStatement = connection!!.prepareStatement(loanSentence)
+            preparedLoan.setInt(1, bookLoanToUpdate.idUser.toInt())
+            preparedLoan.setInt(2, bookLoanToUpdate.idBook.toInt())
+            preparedLoan.setString(3, bookLoanToUpdate.startDate)
+            preparedLoan.setString(4, bookLoanToUpdate.endDate)
+            preparedLoan.executeUpdate()
+            preparedLoan.close()
+
+        } catch (e: SQLException) {
+            println("Error " + e.errorCode + ": " + e.message)
+        }
+
     }
 
     fun deleteBookLoan(userID: String, bookID: String) {
