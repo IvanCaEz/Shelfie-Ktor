@@ -15,7 +15,7 @@ import java.io.FileNotFoundException
 
 fun Route.userRouting() {
     val db = Database()
-    authenticate("auth-digest") {
+    //authenticate("auth-digest") {
         route("/users") {
             /**
              * GET todos los usuarios
@@ -268,7 +268,7 @@ fun Route.userRouting() {
             // POST Libro a historial del user
 
             post("{userid?}/book_history") {
-                val book = call.receive<Book>()
+                val bookID = call.receive<Int>()
                 val userID = call.parameters["userid"]
                 if (userID.isNullOrBlank()) return@post call.respondText(
                     "Missing user id.", status = HttpStatusCode.BadRequest
@@ -279,18 +279,17 @@ fun Route.userRouting() {
                         // Si el historial de libros leídos no tiene el id del libro, lo añadimos
                         // No sé por qué no se añade el historial en la otra función así que aquí se lo añadimos
                         userList[0].bookHistory = db.getBookHistoryFromUser(userID)
-                        if (!userList[0].bookHistory.contains(book.idBook.toInt())) {
+                        if (!userList[0].bookHistory.contains(bookID.toInt())) {
                             // Lo añadimos
-                            db.addBookRead(userID, book.idBook)
+                            db.addBookRead(userID, bookID)
 
-                            call.respondText(
-                                "Book with id ${book.idBook} added to book history of user with id $userID correctly.",
+                            return@post call.respondText(
+                                "Book with id $bookID added to book history of user with id $userID correctly.",
                                 status = HttpStatusCode.Created
                             )
-                            return@post call.respond(book)
                             // Si ya existe
                         } else return@post call.respondText(
-                            "Book with id ${book.idBook} already exists.",
+                            "Book with id $bookID already exists.",
                             status = HttpStatusCode.OK
                         )
                         // Si no existe ese usuario en nuestro mapa
@@ -446,7 +445,7 @@ fun Route.userRouting() {
             }
         }
 
-    }
+    //}
 
 }
 

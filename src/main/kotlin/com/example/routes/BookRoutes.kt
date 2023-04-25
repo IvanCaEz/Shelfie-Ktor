@@ -80,6 +80,31 @@ fun Route.bookRouting() {
                 }
             }
         }
+        // Book Ratings
+        get("ratings"){
+            val bookRatings = db.getAllBookRatings()
+            if (bookRatings.isNotEmpty()) call.respond(bookRatings)
+            else call.respondText("No books found.", status = HttpStatusCode.OK)
+        }
+
+        get("{bookID}/ratings"){
+            val bookID = call.parameters["bookID"]
+            if (bookID.isNullOrBlank()) return@get call.respondText(
+                "Missing book id.",
+                status = HttpStatusCode.BadRequest
+            )
+            call.respond(db.getBookRating(bookID) )
+        }
+        put("{bookID}/ratings"){
+            val bookID = call.parameters["bookID"]
+            val rating = call.receive<Float>()
+
+            if (bookID.isNullOrBlank()) return@put call.respondText(
+                "Missing book id.", status = HttpStatusCode.BadRequest
+            )
+            db.updateBookRating(bookID, rating)
+            return@put call.respond("Updated rating of book with id $bookID")
+        }
 
 
         // Post solo pueden hacerlo los admins

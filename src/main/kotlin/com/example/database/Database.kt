@@ -361,9 +361,8 @@ class Database {
     }
 
 
-    fun addBookRead(userID: String, bookID: String) {
+    fun addBookRead(userID: String, bookID: Int) {
         try {
-
             val statement = connection!!.createStatement()
             val updateArray =
                 "UPDATE users SET book_history = array_append(book_history, $bookID) WHERE id_user = $userID"
@@ -594,6 +593,67 @@ class Database {
             preparedReview.setInt(5, newReview.rating)
             preparedReview.executeUpdate()
             preparedReview.close()
+
+        } catch (e: SQLException) {
+            println("Error " + e.errorCode + ": " + e.message)
+        }
+    }
+
+    fun getAllBookRatings(): MutableMap<String, Float> {
+        val ratings = mutableMapOf<String, Float>()
+        try {
+            val statement = connection!!.createStatement()
+            val ratingSelect = "SELECT * FROM book_ratings"
+            val result = statement.executeQuery(ratingSelect)
+
+            while (result.next()) {
+                ratings[result.getInt("id_book").toString()] = result.getFloat("rating")
+            }
+            statement.close()
+
+        } catch (e: SQLException) {
+            println("Error " + e.errorCode + ": " + e.message)
+        }
+        return ratings
+    }
+
+    fun getBookRating(bookID: String):  Float {
+        var rating = 0.0f
+        try {
+            val statement = connection!!.createStatement()
+            val ratingSelect = "SELECT * FROM book_ratings WHERE id_book = $bookID"
+            val result = statement.executeQuery(ratingSelect)
+
+            while (result.next()) {
+                rating = result.getFloat("rating")
+            }
+            statement.close()
+
+        } catch (e: SQLException) {
+            println("Error " + e.errorCode + ": " + e.message)
+        }
+        return rating
+    }
+
+    fun updateBookRating(bookID: String, rating: Float){
+        try {
+            val bookRatingSentence = "UPDATE book_ratings SET rating = $rating WHERE id_book = $bookID "
+            val preparedbookRating: PreparedStatement = connection!!.prepareStatement(bookRatingSentence)
+            preparedbookRating.executeUpdate()
+            preparedbookRating.close()
+        } catch (e: SQLException) {
+            println("Error " + e.errorCode + ": " + e.message)
+        }
+    }
+
+    fun insertBookRating(bookID: String, rating: Float){
+        try {
+            val bookRatingSentence = "INSERT INTO book_ratings VALUES (?,?)"
+            val preparedbookRating: PreparedStatement = connection!!.prepareStatement(bookRatingSentence)
+            preparedbookRating.setInt(1, bookID.toInt())
+            preparedbookRating.setFloat(2, rating)
+            preparedbookRating.executeUpdate()
+            preparedbookRating.close()
 
         } catch (e: SQLException) {
             println("Error " + e.errorCode + ": " + e.message)
