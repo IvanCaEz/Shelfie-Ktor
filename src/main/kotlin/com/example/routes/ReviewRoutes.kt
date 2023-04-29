@@ -110,6 +110,7 @@ fun Route.reviewRouting() {
                 if (review.idReview != "") {
                     db.updateReview(reviewID, reviewToUpdate)
 
+
                     return@put call.respondText(
                         "Review with id $reviewID has been updated.", status = HttpStatusCode.Accepted
                     )

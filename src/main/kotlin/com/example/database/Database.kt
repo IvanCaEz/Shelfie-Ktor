@@ -193,7 +193,6 @@ class Database {
                 val history = result.getArray("book_history").array as Array<Int>
                 user = getUserFromResult(result, history)
             }
-            println(user.userName+user.name)
             statement.close()
 
         } catch (e: SQLException) {
@@ -408,25 +407,6 @@ class Database {
         return history
     }
 
-    fun getFavGenresFromUser(userID: String): Set<String> {
-        var favGenres = setOf<String>()
-        try {
-
-            val statement = connection!!.createStatement()
-            val userSelect = "SELECT favorite_genres FROM users WHERE id_user = $userID"
-            val result = statement.executeQuery(userSelect)
-
-            while (result.next()) {
-                favGenres = (result.getArray("favorite_genres").array as Array<String>)
-                    .map { it }.toSet()
-            }
-            statement.close()
-
-        } catch (e: SQLException) {
-            println("Error " + e.errorCode + ": " + e.message)
-        }
-        return favGenres
-    }
 
     /**
      * Esta función transforma el resultado de la query de la base de datos en un libro.

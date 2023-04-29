@@ -93,6 +93,8 @@ fun Route.bookRouting() {
                 "Missing book id.",
                 status = HttpStatusCode.BadRequest
             )
+            val listOfReviews = db.getAllReviewsOfBook(bookID)
+            listOfReviews
             call.respond(db.getBookRating(bookID) )
         }
         put("{bookID}/ratings"){
