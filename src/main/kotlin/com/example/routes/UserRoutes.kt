@@ -19,7 +19,7 @@ fun Route.userRouting() {
         /**
          * GET todos los usuarios
          */
-        //authenticate("auth-digest") {
+        authenticate("auth-digest") {
 
             get {
                 val userList = db.getAllUsers()
@@ -53,7 +53,8 @@ fun Route.userRouting() {
              */
             get("/username/{userName}") {
                 val userName = call.parameters["userName"]
-
+                println("hola")
+                println(userTable[userName])
                 if (userName.isNullOrBlank()) return@get call.respondText(
                     "Missing user id.", status = HttpStatusCode.BadRequest
                 )
@@ -448,7 +449,7 @@ fun Route.userRouting() {
         }
     }
 
-    //}
+    }
 
 }
 

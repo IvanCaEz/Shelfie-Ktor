@@ -29,6 +29,7 @@ fun Route.bookRouting() {
             if (id.isNullOrBlank()) return@get call.respondText(
                 "Missing book id.", status = HttpStatusCode.BadRequest
             )
+            //[B@dd4e156
 
             val listOfBooksFromDB = db.getAllBooks()
             if (listOfBooksFromDB.isNotEmpty()) {
@@ -93,8 +94,6 @@ fun Route.bookRouting() {
                 "Missing book id.",
                 status = HttpStatusCode.BadRequest
             )
-            val listOfReviews = db.getAllReviewsOfBook(bookID)
-            listOfReviews
             call.respond(db.getBookRating(bookID) )
         }
         put("{bookID}/ratings"){

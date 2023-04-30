@@ -12,6 +12,7 @@ fun Application.configureSecurity(){
         digest("auth-digest") {
             realm = myRealm
             digestProvider { userName, realm ->
+
                 userTable[userName]
             }
             validate { credentials ->
