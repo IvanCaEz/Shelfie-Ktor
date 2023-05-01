@@ -177,66 +177,7 @@ fun Route.userRouting() {
 
         }
 
-        /**
-         * POST Usuario
-         * Recibimos los datos por partes y añadimos la foto a nuestra carpeta de imágenes
-         * (Esto igual cambiarlo y hacer que se registren con una foto placeholder y luego puedan cambiarla
-         * una vez registrados)
-         * Para añadirlo, verificamos que el correo no esté ya en la base de datos,
-         * la ID se generará de forma automática según el tamaño de la lista de usuarios
-         *
-         */
-        post {
-            val userData = call.receiveMultipart()
-            var newUser = User(
-                "", "", "", "", "", "", UserType.NORMAL,
-                0, setOf<Int>(), false, ""
-            )
-            val gson = Gson()
-            // Separem el tractament de les dades entre: dades primitives i fitxers
-            userData.forEachPart { part ->
-                when (part) {
-                    is PartData.FormItem -> {
-                        if (part.name == "body") {
-                            newUser = gson.fromJson(part.value, User::class.java)
-                        }
-                    }
-                    // Aquí recollim els fitxers
-                    // Habrá que hacer en el android que este campo sea una imagen placeholder
-                    // o no guardarla hasta que la cambie
-                    is PartData.FileItem -> {
-                        try {
-                            newUser.userImage = part.originalFileName as String
-                            val fileBytes = part.streamProvider().readBytes()
-                            File("src/main/kotlin/com/example/user-images/" + newUser.userImage).writeBytes(fileBytes)
-                            println("Imagen subida")
-                        } catch (e: FileNotFoundException) {
-                            println("Error " + e.message)
-                        }
-                    }
 
-                    else -> {}
-                }
-
-                println("Tipo user: ${newUser.userType}")
-
-                println("Subido ${part.name}")
-            }
-            println("Ahora posteamos")
-            // Si no hay ningún usuario ya con ese mail, lo añadimos a la base de datos con esa ID
-            val userList = db.getAllUsers()
-            if (userList.any { it.email == newUser.email }) {
-                call.respondText(
-                    "Email ${newUser.email} already exists in our database.",
-                    status = HttpStatusCode.OK
-                )
-            } else {
-
-                db.insertNewUser(newUser)
-
-                return@post call.respondText("User stored correctly.", status = HttpStatusCode.Created)
-            }
-        }
 
 
         // POST Préstamo al user
@@ -448,6 +389,67 @@ fun Route.userRouting() {
             }
         }
     }
+
+        /**
+         * POST Usuario
+         * Recibimos los datos por partes y añadimos la foto a nuestra carpeta de imágenes
+         * (Esto igual cambiarlo y hacer que se registren con una foto placeholder y luego puedan cambiarla
+         * una vez registrados)
+         * Para añadirlo, verificamos que el correo no esté ya en la base de datos,
+         * la ID se generará de forma automática según el tamaño de la lista de usuarios
+         *
+         */
+        post {
+            val userData = call.receiveMultipart()
+            var newUser = User(
+                "", "", "", "", "", "", UserType.NORMAL,
+                0, setOf<Int>(), false, ""
+            )
+            val gson = Gson()
+            // Separem el tractament de les dades entre: dades primitives i fitxers
+            userData.forEachPart { part ->
+                when (part) {
+                    is PartData.FormItem -> {
+                        if (part.name == "body") {
+                            newUser = gson.fromJson(part.value, User::class.java)
+                        }
+                    }
+                    // Aquí recollim els fitxers
+                    // Habrá que hacer en el android que este campo sea una imagen placeholder
+                    // o no guardarla hasta que la cambie
+                    is PartData.FileItem -> {
+                        try {
+                            newUser.userImage = part.originalFileName as String
+                            val fileBytes = part.streamProvider().readBytes()
+                            File("src/main/kotlin/com/example/user-images/" + newUser.userImage).writeBytes(fileBytes)
+                            println("Imagen subida")
+                        } catch (e: FileNotFoundException) {
+                            println("Error " + e.message)
+                        }
+                    }
+
+                    else -> {}
+                }
+
+                println("Tipo user: ${newUser.userType}")
+
+                println("Subido ${part.name}")
+            }
+            println("Ahora posteamos")
+            // Si no hay ningún usuario ya con ese mail, lo añadimos a la base de datos con esa ID
+            val userList = db.getAllUsers()
+            if (userList.any { it.email == newUser.email }) {
+                call.respondText(
+                    "Email ${newUser.email} already exists in our database.",
+                    status = HttpStatusCode.OK
+                )
+            } else {
+
+                db.insertNewUser(newUser)
+
+                return@post call.respondText("User stored correctly.", status = HttpStatusCode.Created)
+            }
+        }
 
     }
 
