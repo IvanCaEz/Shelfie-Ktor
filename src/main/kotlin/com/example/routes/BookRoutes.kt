@@ -29,8 +29,6 @@ fun Route.bookRouting() {
             if (id.isNullOrBlank()) return@get call.respondText(
                 "Missing book id.", status = HttpStatusCode.BadRequest
             )
-            //[B@dd4e156
-
             val listOfBooksFromDB = db.getAllBooks()
             if (listOfBooksFromDB.isNotEmpty()) {
                 val bookWeWant = listOfBooksFromDB.filter { it.idBook == id }
@@ -45,9 +43,7 @@ fun Route.bookRouting() {
             if (bookTitle.isNullOrBlank()) return@get call.respondText(
                 "Missing book title.", status = HttpStatusCode.BadRequest
             )
-
             val listOfBooksFromDB = db.getAllBooks()
-
             if (listOfBooksFromDB.isNotEmpty()) {
                 val bookListByTittleDB = listOfBooksFromDB.filter { book ->
                     book.title.toLowerCasePreservingASCIIRules().contains(bookTitle)

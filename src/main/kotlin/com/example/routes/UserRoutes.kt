@@ -16,21 +16,16 @@ import java.io.FileNotFoundException
 fun Route.userRouting() {
     val db = Database()
     route("/users") {
-        /**
-         * GET todos los usuarios
-         */
+      // Para crear usuario, el post no puede estar dentro del auth, por ello no authenticamos esta ruta al completo
         authenticate("auth-digest") {
-
+            // GET ALL USERS
             get {
                 val userList = db.getAllUsers()
                 if (userList.isNotEmpty()) {
                     call.respond(userList)
                 } else call.respondText("No users found.", status = HttpStatusCode.OK)
             }
-            /**
-             * GET usuario por ID
-             * Miramos si tenemos un usuario con ese ID en nuestra base de datos
-             */
+            // GET ID
             get("{id}") {
                 val id = call.parameters["id"]
 
@@ -446,6 +441,7 @@ fun Route.userRouting() {
             } else {
 
                 db.insertNewUser(newUser)
+                reGenerateUserTable()
 
                 return@post call.respondText("User stored correctly.", status = HttpStatusCode.Created)
             }
