@@ -37,7 +37,7 @@ fun Route.userRouting() {
                 userList.add(user)
                 if (userList.isNotEmpty()) {
                     if (userList.filter { it.idUser == id }.size == 1) {
-                        return@get call.respond(db.getUserByID(id))
+                        return@get call.respond(user)
                     } else call.respondText("User with id $id not found", status = HttpStatusCode.NotFound)
                 } else call.respondText("No users found.", status = HttpStatusCode.OK)
             }
@@ -262,7 +262,6 @@ fun Route.userRouting() {
                         try {
                             userToUpdate.userImage = part.originalFileName as String
                             if (userToUpdate.userImage != db.getUserByID(id).userImage) {
-                                // File("src/main/kotlin/com/example/user-images/" + db.getUserByID(id).userImage).delete()
                                 val fileBytes = part.streamProvider().readBytes()
                                 File("src/main/kotlin/com/example/user-images/" + userToUpdate.userImage).writeBytes(
                                     fileBytes

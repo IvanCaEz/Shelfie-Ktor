@@ -13,7 +13,6 @@ data class User (
     var userType: UserType,
     var borrowedBooksCounter: Int,
     var bookHistory: Set<Int>,
-   // var readBooks: Set<Int>,
     var banned: Boolean,
     var userImage:  String
 )
